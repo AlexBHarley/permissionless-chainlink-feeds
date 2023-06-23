@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/prettierrc",
+  "overrides": [
+    {
+      "files": "*.sol",
+      "options": {
+        "semi": true,
+        "singleQuote": true,
+        "printWidth": 120
+      }
+    },
+    {
+      "files": ["*.js", "*.ts"],
+      "options": {
+        "arrowParens": "avoid",
+        "bracketSpacing": true,
+        "printWidth": 100,
+        "proseWrap": "always",
+        "quoteProps": "as-needed",
+        "semi": true,
+        "singleQuote": true,
+        "tabWidth": 4,
+        "trailingComma": "none",
+        "useTabs": false,
+        "endOfLine": "auto"
+      }
+    }
+  ]
+}
