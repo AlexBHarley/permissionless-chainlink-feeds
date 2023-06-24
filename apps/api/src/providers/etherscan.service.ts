@@ -118,7 +118,7 @@ export class EtherscanService {
         endblock: '99999999',
         page: '1',
         offset: '10',
-        sort: 'desc',
+        sort: 'asc',
       }),
     );
 

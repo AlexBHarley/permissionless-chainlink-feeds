@@ -9,7 +9,7 @@ I want to deploy an ETH/USD price feed on rollup X.
 3. Deploy contract on X
 4. Get setConfig data from Ethereum
 5. Call `setConfig` on X
-6. Set offchain URL to `${API}/${aggregator_address}`
+6. Set offchain URL to `${API}/${aggregator_address}/{data}`
 
 ### Requesting a round
 

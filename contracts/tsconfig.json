@@ -10,6 +10,6 @@
     "types": ["@nomiclabs/hardhat-ethers", "@nomiclabs/hardhat-waffle"],
     "noImplicitAny": false
   },
-  "include": ["./test"],
+  "include": ["./test", "./scripts"],
   "files": ["./hardhat.config.ts"]
 }

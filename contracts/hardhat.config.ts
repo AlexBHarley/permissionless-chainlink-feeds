@@ -1,13 +1,14 @@
 import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-contract-sizer';
 
+import { chainMetadata, objMap } from '@hyperlane-xyz/sdk';
+
 import { SolcUserConfig } from 'hardhat/types';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const DEFAULT_PRIVATE_KEY =
-  process.env.MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000';
+const PRIVATE_KEY = process.env.PRIVATE_KEY ?? '';
 
 const DEFAULT_COMPILER_SETTINGS: SolcUserConfig = {
   version: '0.8.16',
@@ -26,10 +27,9 @@ const DEFAULT_COMPILER_SETTINGS: SolcUserConfig = {
 module.exports = {
   networks: {
     hardhat: {
-      // chainId: 137,
       // forking: {
-      //   url: `https://polygon-rpc.com`,
-      //   blockNumber: 27081600 // hardcode block number to increase performance of the local cache
+      //   url: '',
+      //   blockNumber: 9234479
       // },
       allowUnlimitedContractSize: true,
       loggingEnabled: false,
@@ -37,70 +37,11 @@ module.exports = {
         count: 100
       }
     },
-    eth: {
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_ID_PROJECT}`,
-      chainId: 1,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.INFURA_ID_PROJECT}`,
-      chainId: 3,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_ID_PROJECT}`,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    goerli: {
-      url: `https://goerli.infura.io/v3/${process.env.INFURA_ID_PROJECT}`,
-      chainId: 5,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    kovan: {
-      url: `https://kovan.infura.io/v3/${process.env.INFURA_ID_PROJECT}`,
-      chainId: 42,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    bscTest: {
-      url: `https://data-seed-prebsc-2-s3.binance.org:8545`,
-      chainId: 97,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    bsc: {
-      url: `https://bsc-dataseed.binance.org/`,
-      chainId: 56,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    polygonMumbai: {
-      url: `https://rpc-mumbai.maticvigil.com`,
-      chainId: 80001,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    polygon: {
-      url: `https://polygon-rpc.com`,
-      chainId: 137,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    avalanche: {
-      url: `https://api.avax.network/ext/bc/C/rpc`,
-      chainId: 43114,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    fantom: {
-      url: `https://rpc.ftm.tools/`,
-      chainId: 250,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    arbitrum: {
-      url: `https://arb1.arbitrum.io/rpc`,
-      chainId: 42161,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    },
-    aurora: {
-      url: `https://mainnet.aurora.dev`,
-      chainId: 1313161554,
-      accounts: [`0x${DEFAULT_PRIVATE_KEY}`]
-    }
+    ...objMap(chainMetadata, (_chain, cc) => ({
+      url: cc.publicRpcUrls[0].http,
+      accounts: [PRIVATE_KEY],
+      name: cc.name
+    }))
   },
   etherscan: {
     apiKey: {
@@ -125,7 +66,6 @@ module.exports = {
       arbitrumOne: process.env.ARBITRUM_API_KEY,
       arbitrumTestnet: process.env.ARBITRUM_API_KEY
     }
-    //apiKey: `${process.env.AURORA_API_KEY}`,
   },
   solidity: {
     compilers: [DEFAULT_COMPILER_SETTINGS]

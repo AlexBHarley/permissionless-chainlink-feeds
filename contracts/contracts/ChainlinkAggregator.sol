@@ -118,12 +118,18 @@ contract ChainlinkAggregator is OffchainAggregator, AbstractCcipReadIsm, Hyperla
      */
     function verify(bytes calldata _metadata, bytes calldata _message) external returns (bool) {
       (bytes memory _report, bytes32[] memory _rs, bytes32[] memory _ss, bytes32 _vs) = abi.decode(
-        // remove function selector
+        // remove function selector from original tx data
         _metadata[4:], 
         (bytes, bytes32[], bytes32[], bytes32)
       );
       transmit(_report, _rs, _ss, _vs);
       return true;
+    }
+
+    function setOffchainUrls(string[] memory urls) external onlyOwner {
+      require(urls.length > 0, "!length");
+      offchainUrls = urls;
+      emit OffchainUrlsUpdated(urls);
     }
 
 }
