@@ -14,14 +14,11 @@ export class AppController {
   ) {}
 
   @Get('/constructor/:feed')
-  async getConstructorData(
-    @Param('feed') feed: string,
-  ): Promise<SignersResponseDto> {
+  async getConstructorData(@Param('feed') feed: string): Promise<string[]> {
     const etherscanApiKey =
       this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
 
     if (etherscanApiKey) {
-      // @ts-expect-error
       return this.etherscanService.getConstructorData(feed);
     }
 
