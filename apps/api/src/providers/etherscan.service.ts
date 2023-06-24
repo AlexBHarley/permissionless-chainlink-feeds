@@ -231,7 +231,11 @@ export class EtherscanService {
       '',
     ];
 
-    // having some problems with Viem
+    /**
+     * having some problems with Viem, revisit after
+     * https://github.com/wagmi-dev/viem/pull/777
+     */
+
     //   const rpc = this.configService.get<string>('ETHEREUM_RPC_URI') ?? '';
     //   const client = createPublicClient({ chain: mainnet, transport: http(rpc) });
 
