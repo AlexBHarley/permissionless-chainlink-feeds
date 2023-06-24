@@ -1,22 +1,7 @@
-import { fetch } from 'cross-fetch';
-
 import { chainIdToMetadata, hyperlaneContractAddresses } from '@hyperlane-xyz/sdk';
-
 import { ethers } from 'hardhat';
 
-const API_ENDPOINT = 'http://localhost:3000';
-
-const FEED_ADDRESS = '0xE62B71cf983019BFf55bC83B48601ce8419650CC';
-
-async function apiFetch(path: string, options?: RequestInit) {
-  const response = await fetch(`${API_ENDPOINT}${path}`, options);
-  if (response.status !== 200) {
-    console.log('Unavailable API');
-    process.exit(1);
-  }
-
-  return response;
-}
+import { API_ENDPOINT, FEED_ADDRESS, apiFetch } from './utils';
 
 async function main() {
   const [signer] = await ethers.getSigners();
