@@ -10,16 +10,26 @@ import { ConfigService } from '@nestjs/config';
 import {
   Address,
   concat,
+  createPublicClient,
+  decodeEventLog,
   decodeFunctionData,
+  encodeAbiParameters,
   encodePacked,
+  http,
   keccak256,
   recoverAddress,
   toBytes,
   zeroAddress,
 } from 'viem';
 
-import { TRANSMIT_SIGNATURE } from '../constants';
+import {
+  EtherscanError,
+  EtherscanSuccess,
+  isEtherscanError,
+} from 'src/types/etherscan';
+import { mainnet } from 'viem/chains';
 import * as OffchainAggregatorAbi from '../abis/OffchainAggregator.json';
+import { TRANSMIT_SIGNATURE } from '../constants';
 import { etherscan } from '../types';
 
 @Injectable()
@@ -31,31 +41,75 @@ export class EtherscanService {
     private readonly httpService: HttpService,
   ) {}
 
-  private async etherscanRequest(params: URLSearchParams) {
+  private async etherscanRequest<T>(params: URLSearchParams): Promise<T> {
     const apiKey = this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
 
     params.append('apikey', apiKey);
 
-    const response =
-      await this.httpService.axiosRef.get<etherscan.AccountTransactionsResponse>(
-        `https://api.etherscan.io/api?${params.toString()}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+    const response = await this.httpService.axiosRef.get<
+      EtherscanSuccess<T> | EtherscanError
+    >(`https://api.etherscan.io/api?${params.toString()}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    if (response.status !== 200 || response.data.status !== '1') {
+    const result = response.data;
+    if (response.status !== 200 || isEtherscanError(result)) {
       this.logger.error('Invalid Etherscan response code', response.status);
+      console.log(response);
+
       throw new ServiceUnavailableException('etherscan');
     }
 
-    return response;
+    return result.result;
   }
 
-  async getSigners(address: string) {
-    const response = await this.etherscanRequest(
+  private async getLatestTransmit(feed: string) {
+    const result = await this.etherscanRequest<etherscan.Account[]>(
+      new URLSearchParams({
+        module: 'account',
+        action: 'txlist',
+        address: feed,
+        startblock: '0',
+        endblock: '99999999',
+        page: '1',
+        offset: '10',
+        sort: 'desc',
+      }),
+    );
+
+    const tx = result.find(
+      (x) => x.functionName === TRANSMIT_SIGNATURE && x.isError === '0',
+    );
+    if (!tx) {
+      throw new NotFoundException('');
+    }
+
+    return tx;
+  }
+
+  async getLatestRoundId(feed: string) {
+    const tx = await this.getLatestTransmit(feed);
+
+    const rpc = this.configService.get<string>('ETHEREUM_RPC_URI') ?? '';
+    const client = createPublicClient({ chain: mainnet, transport: http(rpc) });
+
+    const receipt = await client.getTransactionReceipt({
+      hash: tx.hash,
+    });
+
+    const { args } = decodeEventLog({
+      abi: OffchainAggregatorAbi,
+      topics: receipt.logs[0].topics,
+      data: receipt.logs[0].data,
+    });
+
+    return (args as any).aggregatorRoundId as number;
+  }
+
+  async getSetConfigData(address: string) {
+    const result = await this.etherscanRequest<etherscan.Account[]>(
       new URLSearchParams({
         module: 'account',
         action: 'txlist',
@@ -63,12 +117,12 @@ export class EtherscanService {
         startblock: '0',
         endblock: '99999999',
         page: '1',
-        offset: '10000',
+        offset: '10',
         sort: 'desc',
       }),
     );
 
-    const tx = response.data.result.find(
+    const tx = result.find(
       (x) =>
         x.functionName ===
           'setConfig(address[] _signers, address[] _transmitters, uint8 _threshold, uint64 _encodedConfigVersion, bytes _encoded)' &&
@@ -78,144 +132,42 @@ export class EtherscanService {
       throw new NotFoundException('');
     }
 
-    const { args } = decodeFunctionData({
-      abi: OffchainAggregatorAbi,
-      data: tx.input,
-    });
-
-    const [_signers] = args as Address[][];
-
-    return {
-      signers: _signers,
-    };
+    return tx.input;
   }
 
-  async getMetadataForReport(address: string, report: string) {
-    const response = await this.etherscanRequest(
+  async getRoundData(feed: string, roundId: number) {
+    const topic1 = encodeAbiParameters(
+      [{ name: 'x', type: 'uint32' }],
+      [roundId],
+    );
+
+    // TODO: page this
+    const result = await this.etherscanRequest<etherscan.Log[]>(
       new URLSearchParams({
-        module: 'account',
-        action: 'txlist',
-        address,
+        module: 'logs',
+        action: 'getLogs',
+        address: feed,
         startblock: '0',
         endblock: '99999999',
-        page: '1',
-        offset: '10',
-        sort: 'desc',
+        page: '0',
+        offset: '100',
+        topic0: keccak256(
+          // @ts-expect-error no idea why Viem typed it this way
+          'NewTransmission(uint32,int192,address,int192[],bytes,bytes32)',
+        ),
+        topic0_1_opr: 'and',
+        topic1,
       }),
     );
 
-    const tx = response.data.result.find(
-      (x) => x.functionName === TRANSMIT_SIGNATURE && x.isError === '0',
-    );
-    if (!tx) {
+    if (!result.length) {
       throw new NotFoundException('');
     }
 
-    const { args } = decodeFunctionData({
-      abi: OffchainAggregatorAbi,
-      data: tx.input,
-    });
-
-    const [, rs] = args as Address[][];
-    const [, , ss] = args as Address[][];
-    const [, , , vs] = args as string[];
-
-    const signatures = rs.map((_r, index) =>
-      // note: rsv format
-      encodePacked(
-        ['bytes32', 'bytes32', 'uint8'],
-        [rs[index], ss[index], toBytes(vs)[index] + 27],
-      ),
-    );
-
-    const addresses = await Promise.all(
-      signatures.map(
-        async (signature) =>
-          utils.addressToBytes32(
-            await recoverAddress({
-              hash: keccak256(report as Address),
-              signature,
-            }),
-          ) as Address,
-      ),
-    );
-
-    return {
-      metadata: encodePacked(
-        ['bytes32', 'uint8', 'bytes', 'bytes'],
-        [
-          utils.addressToBytes32(zeroAddress) as Address,
-          1,
-          concat(signatures),
-          encodePacked(['bytes32[]'], [addresses]),
-        ],
-      ),
-    };
+    return result[0].data;
   }
 
-  async getLatestSignatures(address: string) {
-    const response = await this.etherscanRequest(
-      new URLSearchParams({
-        module: 'account',
-        action: 'txlist',
-        address,
-        startblock: '0',
-        endblock: '99999999',
-        page: '1',
-        offset: '10',
-        sort: 'desc',
-      }),
-    );
-
-    const tx = response.data.result.find(
-      (x) => x.functionName === TRANSMIT_SIGNATURE && x.isError === '0',
-    );
-    if (!tx) {
-      throw new NotFoundException('');
-    }
-
-    const { args } = decodeFunctionData({
-      abi: OffchainAggregatorAbi,
-      data: tx.input,
-    });
-
-    const [report] = args as Address[];
-    const [, rs] = args as Address[][];
-    const [, , ss] = args as Address[][];
-    const [, , , vs] = args as string[];
-
-    const signatures = rs.map((_r, index) =>
-      // note: rsv format
-      encodePacked(
-        ['bytes32', 'bytes32', 'uint8'],
-        [rs[index], ss[index], toBytes(vs)[index] + 27],
-      ),
-    );
-
-    const addresses = await Promise.all(
-      signatures.map(
-        async (signature) =>
-          utils.addressToBytes32(
-            await recoverAddress({ hash: keccak256(report), signature }),
-          ) as Address,
-      ),
-    );
-
-    return {
-      message: report,
-      metadata: encodePacked(
-        ['bytes32', 'uint8', 'bytes', 'bytes'],
-        [
-          utils.addressToBytes32(zeroAddress) as Address,
-          1,
-          concat(signatures),
-          encodePacked(['bytes32[]'], [addresses]),
-        ],
-      ),
-    };
-  }
-
-  async getConstructorData(_address: string) {
+  async getConstructorArguments(_address: string) {
     return [
       '0',
       '0',

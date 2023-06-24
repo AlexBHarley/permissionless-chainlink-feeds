@@ -1,6 +1,5 @@
-export class MetadataRequestDto {
-  aggregator: string;
-  report: string;
+export class RoundDataRequestDto {
+  data: number;
 }
 
 export class MetadataResponseDto {

@@ -1,9 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { LatestRoundResponseDto } from './dtos/latest-round.dto';
-import { MetadataRequestDto, MetadataResponseDto } from './dtos/metadata.dto';
-import { SignersResponseDto } from './dtos/signers.dto';
+import { RoundDataRequestDto } from './dtos/metadata.dto';
 import { EtherscanService } from './providers/etherscan.service';
 
 @Controller()
@@ -13,56 +11,54 @@ export class AppController {
     private readonly configService: ConfigService,
   ) {}
 
-  @Get('/constructor/:feed')
-  async getConstructorData(@Param('feed') feed: string): Promise<string[]> {
+  @Get('/latest_round_id/:feed')
+  async getLatestRoundId(@Param('feed') feed: string): Promise<number> {
     const etherscanApiKey =
       this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
 
     if (etherscanApiKey) {
-      return this.etherscanService.getConstructorData(feed);
+      return this.etherscanService.getLatestRoundId(feed);
     }
 
     throw new Error('No provider configured');
   }
 
-  @Get('/signers/:feed')
-  async getSigners(@Param('feed') feed: string): Promise<SignersResponseDto> {
-    const etherscanApiKey =
-      this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
-
-    if (etherscanApiKey) {
-      return this.etherscanService.getSigners(feed);
-    }
-
-    throw new Error('No provider configured');
-  }
-
-  @Get('/latest_round/:feed')
-  async getLatestRound(
+  @Get('/constructor_arguments/:feed')
+  async getConstructorArguments(
     @Param('feed') feed: string,
-  ): Promise<LatestRoundResponseDto> {
+  ): Promise<string[]> {
     const etherscanApiKey =
       this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
 
     if (etherscanApiKey) {
-      return this.etherscanService.getLatestSignatures(feed);
+      return this.etherscanService.getConstructorArguments(feed);
     }
 
     throw new Error('No provider configured');
   }
 
-  @Post('/metadata')
-  async getMetadataForReport(
-    @Body() body: MetadataRequestDto,
-  ): Promise<MetadataResponseDto> {
+  @Get('/set_config_data/:feed')
+  async getSetConfigData(@Param('feed') feed: string): Promise<string> {
     const etherscanApiKey =
       this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
 
     if (etherscanApiKey) {
-      return this.etherscanService.getMetadataForReport(
-        body.aggregator,
-        body.report,
-      );
+      return this.etherscanService.getSetConfigData(feed);
+    }
+
+    throw new Error('No provider configured');
+  }
+
+  @Get('/round_data/:feed/:roundId')
+  async getMetadataForReport(
+    @Param('feed') feed: string,
+    @Param('roundId') roundId: string,
+  ): Promise<string> {
+    const etherscanApiKey =
+      this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
+
+    if (etherscanApiKey) {
+      return this.etherscanService.getRoundData(feed, parseInt(roundId));
     }
 
     throw new Error('No provider configured');
