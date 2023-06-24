@@ -18,9 +18,9 @@ import {
   zeroAddress,
 } from 'viem';
 
+import { TRANSMIT_SIGNATURE } from '../constants';
 import * as OffchainAggregatorAbi from '../abis/OffchainAggregator.json';
 import { etherscan } from '../types';
-import { TRANSMIT_SIGNATURE } from 'src/constants';
 
 @Injectable()
 export class EtherscanService {
@@ -213,5 +213,58 @@ export class EtherscanService {
         ],
       ),
     };
+  }
+
+  async getConstructorData(_address: string) {
+    return [
+      '0',
+      '0',
+      '0',
+      '0',
+      '0',
+      zeroAddress,
+      '0',
+      '95780971304118053647396689196894323976171195136475135',
+      zeroAddress,
+      zeroAddress,
+      '8',
+      '',
+    ];
+
+    // having some problems with Viem
+    //   const rpc = this.configService.get<string>('ETHEREUM_RPC_URI') ?? '';
+    //   const client = createPublicClient({ chain: mainnet, transport: http(rpc) });
+
+    //   const [response, bytecode] = await Promise.all([
+    //     this.etherscanRequest(
+    //       new URLSearchParams({
+    //         module: 'account',
+    //         action: 'txlist',
+    //         address,
+    //         startblock: '0',
+    //         endblock: '99999999',
+    //         page: '1',
+    //         offset: '1',
+    //         sort: 'asc',
+    //       }),
+    //     ),
+    //     client.getBytecode({ address: address as Address }),
+    //   ]);
+
+    //   if (!response.data || !bytecode) {
+    //     throw new NotFoundException('');
+    //   }
+
+    //   console.log(response.data.result[0].input);
+
+    //   const { args } = decodeDeployData({
+    //     abi: OffchainAggregatorAbi,
+    //     // viem adds 0x to the data property
+    //     // @ts-expect-error
+    //     data: response.data.result[0].input.slice(2),
+    //     bytecode,
+    //   });
+
+    //   console.log(args);
   }
 }

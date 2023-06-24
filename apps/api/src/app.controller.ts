@@ -13,6 +13,21 @@ export class AppController {
     private readonly configService: ConfigService,
   ) {}
 
+  @Get('/constructor/:feed')
+  async getConstructorData(
+    @Param('feed') feed: string,
+  ): Promise<SignersResponseDto> {
+    const etherscanApiKey =
+      this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
+
+    if (etherscanApiKey) {
+      // @ts-expect-error
+      return this.etherscanService.getConstructorData(feed);
+    }
+
+    throw new Error('No provider configured');
+  }
+
   @Get('/signers/:feed')
   async getSigners(@Param('feed') feed: string): Promise<SignersResponseDto> {
     const etherscanApiKey =
