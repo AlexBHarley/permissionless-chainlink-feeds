@@ -3,5 +3,5 @@ export class RoundDataRequestDto {
 }
 
 export class MetadataResponseDto {
-  metadata: string;
+  data: string;
 }

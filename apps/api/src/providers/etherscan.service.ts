@@ -164,7 +164,17 @@ export class EtherscanService {
       throw new NotFoundException('');
     }
 
-    return result[0].data;
+    const rpc = this.configService.get<string>('ETHEREUM_RPC_URI') ?? '';
+    const client = createPublicClient({
+      chain: mainnet,
+      transport: http(rpc),
+    });
+
+    const tx = await client.getTransaction({
+      hash: result[0].transactionHash,
+    });
+
+    return { data: tx.input };
   }
 
   async getConstructorArguments(_address: string) {

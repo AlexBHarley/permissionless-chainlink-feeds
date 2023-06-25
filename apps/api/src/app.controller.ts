@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { RoundDataRequestDto } from './dtos/metadata.dto';
+import { MetadataResponseDto, RoundDataRequestDto } from './dtos/metadata.dto';
 import { EtherscanService } from './providers/etherscan.service';
 
 @Controller()
@@ -53,7 +53,7 @@ export class AppController {
   async getMetadataForReport(
     @Param('feed') feed: string,
     @Param('roundId') roundId: string,
-  ): Promise<string> {
+  ): Promise<MetadataResponseDto> {
     const etherscanApiKey =
       this.configService.get<string>('ETHERSCAN_API_KEY') ?? '';
 

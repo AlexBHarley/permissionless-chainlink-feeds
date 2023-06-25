@@ -27,7 +27,7 @@ export type Log = {
   gasPrice: string;
   gasUsed: string;
   logIndex: string;
-  transactionHash: string;
+  transactionHash: Address;
   transactionIndex: string;
 };
 

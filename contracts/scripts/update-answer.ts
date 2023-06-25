@@ -13,10 +13,6 @@ async function main() {
   const latestRoundId = await apiFetch(`/latest_round_id/${FEED_ADDRESS}`).then(x => x.json());
   console.log('[update-answer] latestRoundId', latestRoundId);
 
-  const roundData = await apiFetch(`/round_data/${FEED_ADDRESS}/${latestRoundId}`).then(x =>
-    x.text()
-  );
-
   const addresses = hyperlaneContractAddresses[chainIdToMetadata[chainId].name];
 
   const mailbox = await ethers.getContractAt(MailboxAbi, addresses.mailbox);
@@ -26,9 +22,11 @@ async function main() {
   );
 
   const receipt = await mailbox
-    .dispatch(DESTINATION_DOMAIN, utils.addressToBytes32(AGGREGATOR_ADDRESS), roundData)
+    .dispatch(DESTINATION_DOMAIN, utils.addressToBytes32(AGGREGATOR_ADDRESS), latestRoundId)
     .then(x => x.wait());
-  const messageId = receipt.events[receipt.events.length - 1].args.messageId;
+
+  const event = receipt.events.find(x => x.event === 'DispatchId');
+  const messageId = event.args.messageId;
   console.log('[update-answer] dispatched', messageId);
 
   const gasQuote = await igp.quoteGasPayment(DESTINATION_DOMAIN, 350_000);
