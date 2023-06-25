@@ -1,8 +1,9 @@
+import { abi as MailboxAbi } from '@hyperlane-xyz/core/artifacts/contracts/Mailbox.sol/Mailbox.json';
+import { abi as InterchainGasPaymasterAbi } from '@hyperlane-xyz/core/artifacts/contracts/igps/InterchainGasPaymaster.sol/InterchainGasPaymaster.json';
+import { chainIdToMetadata, hyperlaneContractAddresses } from '@hyperlane-xyz/sdk';
+import { utils } from '@hyperlane-xyz/utils';
 import { ethers } from 'hardhat';
 
-import { utils } from '@hyperlane-xyz/utils';
-import { chainIdToMetadata, hyperlaneContractAddresses } from '@hyperlane-xyz/sdk';
-import { abi as MailboxAbi } from '@hyperlane-xyz/core/artifacts/contracts/Mailbox.sol/Mailbox.json';
 import { AGGREGATOR_ADDRESS, DESTINATION_DOMAIN, FEED_ADDRESS, apiFetch } from './utils';
 
 async function main() {
@@ -10,7 +11,7 @@ async function main() {
   const chainId = await signer.getChainId();
 
   const latestRoundId = await apiFetch(`/latest_round_id/${FEED_ADDRESS}`).then(x => x.json());
-  console.log('latestRoundId', latestRoundId);
+  console.log('[update-answer] latestRoundId', latestRoundId);
 
   const roundData = await apiFetch(`/round_data/${FEED_ADDRESS}/${latestRoundId}`).then(x =>
     x.text()
@@ -19,19 +20,26 @@ async function main() {
   const addresses = hyperlaneContractAddresses[chainIdToMetadata[chainId].name];
 
   const mailbox = await ethers.getContractAt(MailboxAbi, addresses.mailbox);
-
-  const tx = await mailbox.dispatch(
-    DESTINATION_DOMAIN,
-    utils.addressToBytes32(AGGREGATOR_ADDRESS),
-    roundData
+  const igp = await ethers.getContractAt(
+    InterchainGasPaymasterAbi,
+    addresses.interchainGasPaymaster
   );
-  console.log(await tx.wait());
 
-  // todo, pay for gas
+  const receipt = await mailbox
+    .dispatch(DESTINATION_DOMAIN, utils.addressToBytes32(AGGREGATOR_ADDRESS), roundData)
+    .then(x => x.wait());
+  const messageId = receipt.events[receipt.events.length - 1].args.messageId;
+  console.log('[update-answer] dispatched', messageId);
+
+  const gasQuote = await igp.quoteGasPayment(DESTINATION_DOMAIN, 350_000);
+  await igp
+    .payForGas(messageId, DESTINATION_DOMAIN, 350_000, await signer.getAddress(), {
+      value: gasQuote
+    })
+    .then(x => x.wait());
+  console.log('[update-answer] gas paid');
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch(error => {
   console.error(error);
   process.exitCode = 1;
