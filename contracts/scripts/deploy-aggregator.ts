@@ -4,7 +4,7 @@ import {
 } from "@hyperlane-xyz/sdk";
 import { ethers } from "hardhat";
 
-import { API_ENDPOINT, FEED_ADDRESS, apiFetch } from "./utils";
+import { API_ENDPOINT, FEED_ADDRESS, ORIGIN_DOMAIN, apiFetch } from "./utils";
 
 async function main() {
   const [signer] = await ethers.getSigners();
@@ -12,8 +12,12 @@ async function main() {
 
   const [constructorArguments, setConfigData]: [string[], string] =
     await Promise.all([
-      apiFetch(`/constructor_arguments/${FEED_ADDRESS}`).then((x) => x.json()),
-      apiFetch(`/set_config_data/${FEED_ADDRESS}`).then((x) => x.text()),
+      apiFetch(`/constructor_arguments/${ORIGIN_DOMAIN}/${FEED_ADDRESS}`).then(
+        (x) => x.json()
+      ),
+      apiFetch(`/set_config_data/${ORIGIN_DOMAIN}/${FEED_ADDRESS}`).then((x) =>
+        x.text()
+      ),
     ]);
 
   const aggregator = await ethers.deployContract(
@@ -41,7 +45,7 @@ async function main() {
   console.log("[Aggregator] setConfig");
 
   const setOffchainUrls = await aggregator.setOffchainUrls([
-    `${API_ENDPOINT}/round_data/${FEED_ADDRESS}/{data}`,
+    `${API_ENDPOINT}/round_data/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/{data}`,
   ]);
   await setOffchainUrls.wait();
 

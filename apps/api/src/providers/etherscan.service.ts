@@ -20,6 +20,7 @@ import {
   zeroAddress,
 } from "viem";
 import { mainnet } from "viem/chains";
+import { chainIdToMetadata } from "@hyperlane-xyz/sdk";
 
 import * as OffchainAggregatorAbi from "../abis/OffchainAggregator.json";
 import { TRANSMIT_SIGNATURE } from "../constants";
@@ -39,13 +40,19 @@ export class EtherscanService {
     chainId: number,
     params: URLSearchParams
   ): Promise<T> {
-    const apiKey = this.configService.get<string>(etherscanKey(chainId)) ?? "";
+    const etherscanConfig = chainIdToMetadata[chainId].blockExplorers?.find(
+      (x) => x.family === "etherscan"
+    );
+    if (!etherscanConfig) {
+      throw new ServiceUnavailableException("no etherscan config found");
+    }
 
+    const apiKey = this.configService.get<string>(etherscanKey(chainId)) ?? "";
     params.append("apikey", apiKey);
 
     const response = await this.httpService.axiosRef.get<
       EtherscanSuccess<T> | EtherscanError
-    >(`https://api.etherscan.io/api?${params.toString()}`, {
+    >(`${etherscanConfig.apiUrl}?${params.toString()}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -117,23 +124,24 @@ export class EtherscanService {
         address,
         startblock: "0",
         endblock: "99999999",
-        page: "1",
-        offset: "10",
+        page: "0",
+        offset: "100",
         sort: "asc",
       })
     );
 
-    const tx = result.find(
+    const setConfigTxs = result.filter(
       (x) =>
         x.functionName ===
           "setConfig(address[] _signers, address[] _transmitters, uint8 _threshold, uint64 _encodedConfigVersion, bytes _encoded)" &&
         x.isError === "0"
     );
-    if (!tx) {
+    if (!setConfigTxs.length) {
       throw new NotFoundException("");
     }
 
-    return tx.input;
+    // take latest setConfig call
+    return setConfigTxs[setConfigTxs.length - 1].input;
   }
 
   async getRoundData(chainId: number, feed: string, roundId: number) {
@@ -142,7 +150,6 @@ export class EtherscanService {
       [roundId]
     );
 
-    // TODO: page this
     const result = await this.etherscanRequest<etherscan.Log[]>(
       chainId,
       new URLSearchParams({

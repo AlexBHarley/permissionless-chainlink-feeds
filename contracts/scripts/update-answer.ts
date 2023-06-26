@@ -18,9 +18,9 @@ async function main() {
   const [signer] = await ethers.getSigners();
   const chainId = await signer.getChainId();
 
-  const latestRoundId = await apiFetch(`/latest_round_id/${FEED_ADDRESS}`).then(
-    (x) => x.json()
-  );
+  const latestRoundId = await apiFetch(
+    `/latest_round_id/${chainId}/${FEED_ADDRESS}`
+  ).then((x) => x.json());
   console.log("[update-answer] latestRoundId", latestRoundId);
 
   const addresses = hyperlaneContractAddresses[chainIdToMetadata[chainId].name];

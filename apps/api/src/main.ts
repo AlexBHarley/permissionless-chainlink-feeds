@@ -3,6 +3,7 @@ import "cross-fetch/polyfill";
 import { ArgumentsHost, Catch, ExceptionFilter } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as morgan from "morgan";
 
 import { AppModule } from "./app.module";
 
@@ -19,7 +20,7 @@ export class ExceptionsFilter implements ExceptionFilter {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.use(morgan("tiny"));
   app.useGlobalFilters(new ExceptionsFilter());
 
   const config = new DocumentBuilder()
