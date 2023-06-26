@@ -1,0 +1,7 @@
+# Ignore artifacts:
+**/typechain
+**/coverage
+**/dist
+**/cache
+**/artifacts
+**/.turbo
