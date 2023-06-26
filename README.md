@@ -74,12 +74,18 @@ And finally query the latest round data on Mumbai,
 
 ### Automation
 
-If you're following along you will have seen we just manually triggered a round update and pushed it from Goerli to Mumbai. However to use Chainlink price feeds on your chain we need a way of reliably and periodically triggering these round updates.
+If you're following along you will have seen we just manually triggered a round update and pushed it from Goerli to Mumbai. However we need prices to be up to date and don't want to be manually triggering these updates, so we can easily setup some kind of automation and have these round updates triggered whenever a new Chainlink update occurs.
 
-There are a few options available,
+There are of course many options available to us to automate these round updates, a few ideas that spring to mind include,
 
-- Run a lightweight indexer that upon finding `NewTransmission` events, sends the origin chain message
+- Running a lightweight indexer that upon finding `NewTransmission` events, sends the origin chain message
 - Setup a CRON job that queries for the latest round ID and upon finding a new one, sends the origin chain message
 - Configure an onchain messaging system like [Gelato](https://gelato.network) or [Keeper](https://keep3r.network/) to periodically post the round data.
 
-And we'll be now be working on setting up automation via Gelato.
+We've taken the time to configure a simple Gelato integration. So running the following command,
+
+````
+➜  contracts git:(main) ✗ pnpm hardhat run ./scripts/deploy-gelato.ts --network goerli```
+````
+
+Will deploy an instance of the `GelatoAutomate` contract and fund it with 1 GoerliETH.
