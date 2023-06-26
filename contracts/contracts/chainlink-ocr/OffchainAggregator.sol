@@ -15,7 +15,7 @@ import "./TypeAndVersionInterface.sol";
   * @dev For details on its operation, see the offchain reporting protocol design
   * @dev doc, which refers to this contract as simply the "contract".
 */
-/* Ownable, */ contract OffchainAggregator is
+contract OffchainAggregator is
     OffchainAggregatorBilling,
     AggregatorV2V3Interface,
     TypeAndVersionInterface
