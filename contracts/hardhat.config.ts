@@ -45,6 +45,7 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
+      // testnets
       mainnet: process.env.ETHERSCAN_API_KEY,
       ropsten: process.env.ETHERSCAN_API_KEY,
       rinkeby: process.env.ETHERSCAN_API_KEY,
