@@ -24,13 +24,13 @@ First, setup your environment variables,
 
 ```
 ➜  cd apps/api
-➜  api git:(main) ✗ cd .env.example .env
+➜  cd .env.example .env
 ```
 
 And then run the service,
 
 ```
-➜  api git:(main) ✗ pnpm dev
+➜  pnpm dev
 ```
 
 #### Smart contracts
