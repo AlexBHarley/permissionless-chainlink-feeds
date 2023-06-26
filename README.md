@@ -13,7 +13,7 @@ As of 26.6.23 there doesn't exist a UI for easily deploying these price feeds, b
 We'll first get your dependencies installed by running,
 
 ```
-➜  permissionless-chainlink git:(main) ✗ pnpm install
+➜  pnpm install
 ```
 
 #### Chainlink API proxy
@@ -23,7 +23,7 @@ This service handles querying Chainlink specific data either from the chain itse
 First, setup your environment variables,
 
 ```
-➜  permissionless-chainlink git:(main) ✗ cd apps/api
+➜  cd apps/api
 ➜  api git:(main) ✗ cd .env.example .env
 ```
 
@@ -38,26 +38,26 @@ And then run the service,
 Again we need to first we need to setup our environment variables,
 
 ```
-➜  permissionless-chainlink git:(main) ✗ cd contracts
-➜  contracts git:(main) ✗ cp .env.example .env
+➜  cd contracts
+➜  cp .env.example .env
 ```
 
-Then we can deploy the `ChainlinkAggregator`. This script will query initialisation variables from the API server you ran in the previous step, so make sure you've completed that before running this.
+Then we can deploy the `ChainlinkAggregator`. This script will query initialisation variables from the API server you ran in the previous step, so make sure you've got that running before deploying this.
 
 ```
-➜  contracts git:(main) ✗ pnpm hardhat run ./scripts/deploy-aggregator.ts --network mumbai
+➜  pnpm hardhat run ./scripts/deploy-aggregator.ts --network mumbai
 ```
 
 To test everything is working, we can manually relay the latest round data from Goerli to Mumbai,
 
 ```
-➜  contracts git:(main) ✗ pnpm hardhat run ./scripts/update-answer.ts --network goerli
+➜  pnpm hardhat run ./scripts/update-answer.ts --network goerli
 ```
 
 And finally query the latest round data on Mumbai,
 
 ```
-➜  contracts git:(main) ✗ pnpm hardhat run ./scripts/get-answer.ts --network mumbai
+➜  pnpm hardhat run ./scripts/get-answer.ts --network mumbai
 [
   BigNumber { value: "1" },
   BigNumber { value: "188363730000" },
@@ -83,7 +83,7 @@ Triggering round updates manually as we've just done is great, but even better w
 Configuring Gelato is one of the simplest ways to get started with on chain automation and they support many of the same networks that Hyperlane does. Running the following command,
 
 ```
-➜  contracts git:(main) ✗ pnpm hardhat run ./scripts/deploy-gelato.ts --network goerli
+➜  pnpm hardhat run ./scripts/deploy-gelato.ts --network goerli
 ```
 
 Will deploy an instance of the `GelatoAutomate` contract and fund it with 1 GoerliETH. There will also be additional logging similar to this,
