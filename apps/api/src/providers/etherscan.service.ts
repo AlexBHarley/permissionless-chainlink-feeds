@@ -12,6 +12,7 @@ import {
   isEtherscanError,
 } from "src/types/etherscan";
 import {
+  Address,
   createPublicClient,
   decodeEventLog,
   encodeAbiParameters,
@@ -23,6 +24,7 @@ import { mainnet } from "viem/chains";
 import { chainIdToMetadata } from "@hyperlane-xyz/sdk";
 
 import * as OffchainAggregatorAbi from "../abis/OffchainAggregator.json";
+import * as PriceFeedAbi from "../abis/PriceFeed.json";
 import { TRANSMIT_SIGNATURE } from "../constants";
 import { etherscan } from "../types";
 import { etherscanKey, rpcUri } from "src/utils/env-keys";
@@ -61,7 +63,7 @@ export class EtherscanService {
     const result = response.data;
     if (response.status !== 200 || isEtherscanError(result)) {
       this.logger.error("Invalid Etherscan response code", response.status);
-      console.log(response);
+      console.log(response.data);
 
       throw new ServiceUnavailableException("etherscan");
     }
@@ -69,13 +71,23 @@ export class EtherscanService {
     return result.result;
   }
 
-  private async getLatestTransmit(chainId: number, feed: string) {
+  private async getAggregator(chainId: number, feed: string): Promise<string> {
+    const client = this.getEthClient(chainId);
+
+    return (await client.readContract({
+      address: feed as Address,
+      abi: PriceFeedAbi,
+      functionName: "aggregator",
+    })) as string;
+  }
+
+  private async getLatestTransmit(chainId: number, aggregator: string) {
     const result = await this.etherscanRequest<etherscan.Account[]>(
       chainId,
       new URLSearchParams({
         module: "account",
         action: "txlist",
-        address: feed,
+        address: aggregator,
         startblock: "0",
         endblock: "99999999",
         page: "1",
@@ -100,7 +112,8 @@ export class EtherscanService {
   }
 
   async getLatestRoundId(chainId: number, feed: string) {
-    const tx = await this.getLatestTransmit(chainId, feed);
+    const aggregator = await this.getAggregator(chainId, feed);
+    const tx = await this.getLatestTransmit(chainId, aggregator);
 
     const receipt = await this.getEthClient(chainId).getTransactionReceipt({
       hash: tx.hash,
@@ -115,13 +128,15 @@ export class EtherscanService {
     return (args as any).aggregatorRoundId as number;
   }
 
-  async getSetConfigData(chainId: number, address: string) {
+  async getSetConfigData(chainId: number, feed: string) {
+    const aggregator = await this.getAggregator(chainId, feed);
+
     const result = await this.etherscanRequest<etherscan.Account[]>(
       chainId,
       new URLSearchParams({
         module: "account",
         action: "txlist",
-        address,
+        address: aggregator,
         startblock: "0",
         endblock: "99999999",
         page: "0",
@@ -145,6 +160,8 @@ export class EtherscanService {
   }
 
   async getRoundData(chainId: number, feed: string, roundId: number) {
+    const aggregator = await this.getAggregator(chainId, feed);
+
     const topic1 = encodeAbiParameters(
       [{ name: "x", type: "uint32" }],
       [roundId]
@@ -155,11 +172,11 @@ export class EtherscanService {
       new URLSearchParams({
         module: "logs",
         action: "getLogs",
-        address: feed,
+        address: aggregator,
         startblock: "0",
         endblock: "99999999",
         page: "0",
-        offset: "100",
+        offset: "1000",
         topic0: keccak256(
           // @ts-expect-error no idea why Viem enforces 0x here
           "NewTransmission(uint32,int192,address,int192[],bytes,bytes32)"
@@ -180,7 +197,7 @@ export class EtherscanService {
     return { data: tx.input };
   }
 
-  async getConstructorArguments(chainId: number, _address: string) {
+  async getConstructorArguments(chainId: number, feed: string) {
     return [
       "0",
       "0",
@@ -200,6 +217,7 @@ export class EtherscanService {
      * having some problems with Viem, revisit after
      * https://github.com/wagmi-dev/viem/pull/777
      */
+    // const aggregator = await this.getAggregator(chainId, feed);
 
     //   const rpc = this.configService.get<string>('ETHEREUM_RPC_URI') ?? '';
     //   const client = createPublicClient({ chain: mainnet, transport: http(rpc) });
