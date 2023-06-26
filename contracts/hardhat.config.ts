@@ -1,47 +1,47 @@
-import '@nomicfoundation/hardhat-toolbox';
-import 'hardhat-contract-sizer';
+import "@nomicfoundation/hardhat-toolbox";
+import "hardhat-contract-sizer";
 
-import { chainMetadata, objMap } from '@hyperlane-xyz/sdk';
+import { chainMetadata, objMap } from "@hyperlane-xyz/sdk";
 
-import { SolcUserConfig } from 'hardhat/types';
+import { SolcUserConfig } from "hardhat/types";
 
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY ?? '';
+const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
 
 const DEFAULT_COMPILER_SETTINGS: SolcUserConfig = {
-  version: '0.8.16',
+  version: "0.8.16",
   settings: {
     viaIR: true,
     optimizer: {
       enabled: true,
-      runs: 200
+      runs: 200,
     },
     metadata: {
-      bytecodeHash: 'none'
-    }
-  }
+      bytecodeHash: "none",
+    },
+  },
 };
 
 module.exports = {
   networks: {
     hardhat: {
-      // forking: {
-      //   url: '',
-      //   blockNumber: 9234479
-      // },
+      forking: {
+        url: "https://polygon-mumbai.g.alchemy.com/v2/X-vdcen0RUrq_Bqt8ztHcGZ3Uei_lD1D",
+        blockNumber: 37251544,
+      },
       allowUnlimitedContractSize: true,
       loggingEnabled: false,
       accounts: {
-        count: 100
-      }
+        count: 100,
+      },
     },
     ...objMap(chainMetadata, (_chain, cc) => ({
       url: cc.publicRpcUrls[0].http,
       accounts: [PRIVATE_KEY],
-      name: cc.name
-    }))
+      name: cc.name,
+    })),
   },
   etherscan: {
     apiKey: {
@@ -64,24 +64,24 @@ module.exports = {
       avalancheFujiTestnet: process.env.AVALANCHE_API_KEY,
       // arbitrum
       arbitrumOne: process.env.ARBITRUM_API_KEY,
-      arbitrumTestnet: process.env.ARBITRUM_API_KEY
-    }
+      arbitrumTestnet: process.env.ARBITRUM_API_KEY,
+    },
   },
   solidity: {
-    compilers: [DEFAULT_COMPILER_SETTINGS]
+    compilers: [DEFAULT_COMPILER_SETTINGS],
   },
   contractSizer: {
     alphaSort: false,
     disambiguatePaths: true,
-    runOnCompile: false
+    runOnCompile: false,
   },
   typechain: {
-    outDir: 'typechain',
-    target: 'ethers-v5'
+    outDir: "typechain",
+    target: "ethers-v5",
   },
   gasReporter: {
-    enabled: process.env.REPORT_GAS === 'true',
+    enabled: process.env.REPORT_GAS === "true",
     noColors: true,
-    outputFile: 'reports/gas_usage/summary.txt'
-  }
+    outputFile: "reports/gas_usage/summary.txt",
+  },
 };

@@ -3,18 +3,18 @@ import {
   TestMailbox,
   TestInterchainGasPaymaster__factory,
   MockMailbox__factory,
-  MockMailbox
-} from '@hyperlane-xyz/core';
-import { expect } from 'chai';
-import { Signer, utils as ethersUtils } from 'ethers';
-import { ethers } from 'hardhat';
+  MockMailbox,
+} from "@hyperlane-xyz/core";
+import { expect } from "chai";
+import { Signer, utils as ethersUtils } from "ethers";
+import { ethers } from "hardhat";
 
-import { ChainlinkAggregator } from '../typechain';
+import { ChainlinkAggregator } from "../typechain";
 
-import * as constructor from './data/constructor';
-import * as setConfig from './data/set-config';
-import * as transmit from './data/transmit';
-import { utils } from '@hyperlane-xyz/utils';
+import * as constructor from "./data/constructor";
+import * as setConfig from "./data/set-config";
+import * as transmit from "./data/transmit";
+import { utils } from "@hyperlane-xyz/utils";
 
 // const [signer] = await ethers.getSigners();
 // const mailboxFactory = new MockMailbox__factory(signer);
@@ -32,7 +32,7 @@ import { utils } from '@hyperlane-xyz/utils';
 // const dataReceived = await recipient.lastData();
 // expect(dataReceived).to.eql(ethers.utils.hexlify(body));
 
-describe('ChainlinkAggregator', () => {
+describe("ChainlinkAggregator", () => {
   let owner: Signer;
   let random: Signer;
 
@@ -47,7 +47,7 @@ describe('ChainlinkAggregator', () => {
   before(async () => {
     [owner, random] = await ethers.getSigners();
     aggregator = (await ethers.deployContract(
-      'ChainlinkAggregator',
+      "ChainlinkAggregator",
       constructor.data,
       owner
     )) as ChainlinkAggregator;
@@ -56,7 +56,10 @@ describe('ChainlinkAggregator', () => {
     originMailbox = await mailboxFactory.deploy(ORIGIN);
     destinationMailbox = await mailboxFactory.deploy(DESTINATION);
 
-    await originMailbox.addRemoteMailbox(DESTINATION, destinationMailbox.address);
+    await originMailbox.addRemoteMailbox(
+      DESTINATION,
+      destinationMailbox.address
+    );
     await destinationMailbox.addRemoteMailbox(ORIGIN, originMailbox.address);
 
     const igpFactory = new TestInterchainGasPaymaster__factory(owner);
@@ -70,31 +73,41 @@ describe('ChainlinkAggregator', () => {
     );
   });
 
-  it('only owner can setConfig', async () => {
+  it("only owner can setConfig", async () => {
     await expect(
       random.sendTransaction({ to: aggregator.address, data: setConfig.data })
-    ).to.revertedWith('Ownable: caller is not the owner');
+    ).to.revertedWith("Ownable: caller is not the owner");
     expect(true).to.eql(true);
   });
 
-  it('setConfig works', async () => {
+  it("setConfig works", async () => {
     await owner.sendTransaction({
       to: aggregator.address,
-      data: setConfig.data
+      data: setConfig.data,
     });
-    expect(await aggregator.s_signers('0')).to.eql('0x080D263FAA8CBd848f0b9B24B40e1f23EA06b3A3');
-    expect(await aggregator.s_signers(1)).to.eql('0xCdEf689d3098A796F840A26f383CE19F4f023B5B');
-    expect(await aggregator.s_signers(2)).to.eql('0xb7bEA3A5d410F7c4eC2aa446ae4236F6Eed6b16A');
+    expect(await aggregator.s_signers("0")).to.eql(
+      "0x080D263FAA8CBd848f0b9B24B40e1f23EA06b3A3"
+    );
+    expect(await aggregator.s_signers(1)).to.eql(
+      "0xCdEf689d3098A796F840A26f383CE19F4f023B5B"
+    );
+    expect(await aggregator.s_signers(2)).to.eql(
+      "0xb7bEA3A5d410F7c4eC2aa446ae4236F6Eed6b16A"
+    );
 
-    const { latestConfigDigest, latestEpochAndRound, threshold, latestAggregatorRoundId } =
-      await aggregator.s_hotVars();
+    const {
+      latestConfigDigest,
+      latestEpochAndRound,
+      threshold,
+      latestAggregatorRoundId,
+    } = await aggregator.s_hotVars();
     // expect(latestConfigDigest).to.eql('0xab57ae8f0defe8c59d1ecdbaa38776d0');
     expect(latestEpochAndRound).to.eql(0);
     expect(threshold).to.eql(10);
     expect(latestAggregatorRoundId).to.eql(0);
   });
 
-  it('verifies in JS', async () => {
+  it("verifies in JS", async () => {
     // await originMailbox.dispatch(
     //   DESTINATION,
     //   utils.addressToBytes32(aggregator.address),
@@ -102,7 +115,7 @@ describe('ChainlinkAggregator', () => {
     // );
     // await destinationMailbox.processNextInboundMessage({ gasLimit: 2_000_000 });
 
-    await aggregator.verify(transmit.data, '0x');
+    await aggregator.verify(transmit.data, "0x");
     console.log(await aggregator.latestRoundData());
     // expect(
     //   await ism.verify(

@@ -1,21 +1,21 @@
-import { Address } from 'viem';
+import { Address } from "viem";
 
 export type EtherscanSuccess<T> = {
-  status: '1';
-  message: 'OK';
+  status: "1";
+  message: "OK";
   result: T;
 };
 
 export type EtherscanError = {
-  status: '0';
+  status: "0";
   message: string;
   result: null;
 };
 
 export function isEtherscanError<T>(
-  x: EtherscanSuccess<T> | EtherscanError,
+  x: EtherscanSuccess<T> | EtherscanError
 ): x is EtherscanError {
-  return x.status === '0';
+  return x.status === "0";
 }
 
 export type Log = {
@@ -55,7 +55,7 @@ export type Account = {
 };
 
 export interface AccountTransactionsError {
-  status: '0';
+  status: "0";
   message: string;
   result: null;
 }

@@ -1,16 +1,18 @@
 pragma solidity ^0.8.13;
 
-import './chainlink-ocr/OffchainAggregator.sol';
+import "./chainlink-ocr/OffchainAggregator.sol";
 
 import {AbstractCcipReadIsm} from "@hyperlane-xyz/core/contracts/isms/ccip-read/AbstractCcipReadIsm.sol";
 import {IInterchainSecurityModule} from "@hyperlane-xyz/core/contracts/interfaces/IInterchainSecurityModule.sol";
 import {AbstractMultisigIsm} from "@hyperlane-xyz/core/contracts/isms/multisig/AbstractMultisigIsm.sol";
 import {Message} from "@hyperlane-xyz/core/contracts/libs/Message.sol";
-import {HyperlaneConnectionClient} from "@hyperlane-xyz/core/contracts/HyperlaneConnectionClient.sol"; 
+import {HyperlaneConnectionClient} from "@hyperlane-xyz/core/contracts/HyperlaneConnectionClient.sol";
 
-import "hardhat/console.sol";
-
-contract ChainlinkAggregator is OffchainAggregator, AbstractCcipReadIsm, HyperlaneConnectionClient {
+contract ChainlinkAggregator is
+    OffchainAggregator,
+    AbstractCcipReadIsm,
+    HyperlaneConnectionClient
+{
     using Message for bytes;
 
     /*
@@ -55,9 +57,7 @@ contract ChainlinkAggregator is OffchainAggregator, AbstractCcipReadIsm, Hyperla
             _decimals,
             _description
         )
-    {
-
-    }
+    {}
 
     /**
      * @notice Initializes the Router contract with Hyperlane core contracts and the address of the interchain security module.
@@ -81,55 +81,63 @@ contract ChainlinkAggregator is OffchainAggregator, AbstractCcipReadIsm, Hyperla
     }
 
     /**
-     * No op because everything happens in the verify function
+     * No-op, everything happens in the verify function
      */
     function handle(
         uint32,
         bytes32,
         bytes calldata _report
-    ) public onlyMailbox {
-  
-    }
+    ) public onlyMailbox {}
 
     /**
-   * @notice sets offchain reporting protocol configuration incl. participating oracles
-   * @param _signers addresses with which oracles sign the reports
-   * @param _transmitters addresses oracles use to transmit the reports
-   * @param _threshold number of faulty oracles the system can tolerate
-   * @param _encodedConfigVersion version number for offchainEncoding schema
-   * @param _encoded encoded off-chain oracle configuration
-   */
-  function setConfig(
-    address[] calldata _signers,
-    address[] calldata _transmitters,
-    uint8 _threshold,
-    uint64 _encodedConfigVersion,
-    bytes calldata _encoded
-  )
-    external
-    onlyOwner()
-  {
-    super._setConfig(_signers, _transmitters, _threshold, _encodedConfigVersion, _encoded);
-  }
+     * @notice sets offchain reporting protocol configuration incl. participating oracles
+     * @param _signers addresses with which oracles sign the reports
+     * @param _transmitters addresses oracles use to transmit the reports
+     * @param _threshold number of faulty oracles the system can tolerate
+     * @param _encodedConfigVersion version number for offchainEncoding schema
+     * @param _encoded encoded off-chain oracle configuration
+     */
+    function setConfig(
+        address[] calldata _signers,
+        address[] calldata _transmitters,
+        uint8 _threshold,
+        uint64 _encodedConfigVersion,
+        bytes calldata _encoded
+    ) external onlyOwner {
+        super._setConfig(
+            _signers,
+            _transmitters,
+            _threshold,
+            _encodedConfigVersion,
+            _encoded
+        );
+    }
 
     /**
      * @param _metadata ABI encoded module metadata
      * @param _message Formatted Hyperlane message (see Message.sol).
      */
-    function verify(bytes calldata _metadata, bytes calldata _message) external returns (bool) {
-      (bytes memory _report, bytes32[] memory _rs, bytes32[] memory _ss, bytes32 _vs) = abi.decode(
-        // remove function selector from original tx data
-        _metadata[4:], 
-        (bytes, bytes32[], bytes32[], bytes32)
-      );
-      transmit(_report, _rs, _ss, _vs);
-      return true;
+    function verify(
+        bytes calldata _metadata,
+        bytes calldata _message
+    ) external onlyMailbox returns (bool) {
+        (
+            bytes memory _report,
+            bytes32[] memory _rs,
+            bytes32[] memory _ss,
+            bytes32 _vs
+        ) = abi.decode(
+                // remove function selector from original tx data
+                _metadata[4:],
+                (bytes, bytes32[], bytes32[], bytes32)
+            );
+        transmit(_report, _rs, _ss, _vs);
+        return true;
     }
 
     function setOffchainUrls(string[] memory urls) external onlyOwner {
-      require(urls.length > 0, "!length");
-      offchainUrls = urls;
-      emit OffchainUrlsUpdated(urls);
+        require(urls.length > 0, "!length");
+        offchainUrls = urls;
+        emit OffchainUrlsUpdated(urls);
     }
-
 }

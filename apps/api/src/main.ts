@@ -1,11 +1,10 @@
-import 'cross-fetch/polyfill';
+import "cross-fetch/polyfill";
 
-import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ArgumentsHost, Catch, ExceptionFilter } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
-import { AppModule } from './app.module';
-
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import { AppModule } from "./app.module";
 
 @Catch()
 export class ExceptionsFilter implements ExceptionFilter {
@@ -24,14 +23,14 @@ async function bootstrap() {
   app.useGlobalFilters(new ExceptionsFilter());
 
   const config = new DocumentBuilder()
-    .setTitle('Chainlink Proxy')
-    .setDescription('Chainlink API proxy for Hyperlane')
-    .setVersion('1.0')
-    .addTag('chainlink')
-    .addTag('hyperlane')
+    .setTitle("Chainlink Proxy")
+    .setDescription("Chainlink API proxy for Hyperlane")
+    .setVersion("1.0")
+    .addTag("chainlink")
+    .addTag("hyperlane")
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup("docs", app, document);
 
   await app.listen(3000);
 }

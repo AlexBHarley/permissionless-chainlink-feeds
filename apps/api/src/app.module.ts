@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { HttpModule } from '@nestjs/axios';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { HttpModule } from "@nestjs/axios";
 
-import { AppController } from './app.controller';
+import { AppController } from "./app.controller";
 
-import { EtherscanService } from './providers/etherscan.service';
+import { EtherscanService } from "./providers/etherscan.service";
 
 @Module({
   imports: [ConfigModule.forRoot(), HttpModule],

@@ -1,1 +1,1 @@
-export * as etherscan from './etherscan';
+export * as etherscan from "./etherscan";
