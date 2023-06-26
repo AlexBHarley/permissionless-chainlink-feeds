@@ -24,6 +24,7 @@ import { mainnet } from "viem/chains";
 import * as OffchainAggregatorAbi from "../abis/OffchainAggregator.json";
 import { TRANSMIT_SIGNATURE } from "../constants";
 import { etherscan } from "../types";
+import { etherscanKey, rpcUri } from "src/utils/env-keys";
 
 @Injectable()
 export class EtherscanService {
@@ -34,8 +35,11 @@ export class EtherscanService {
     private readonly httpService: HttpService
   ) {}
 
-  private async etherscanRequest<T>(params: URLSearchParams): Promise<T> {
-    const apiKey = this.configService.get<string>("ETHERSCAN_API_KEY") ?? "";
+  private async etherscanRequest<T>(
+    chainId: number,
+    params: URLSearchParams
+  ): Promise<T> {
+    const apiKey = this.configService.get<string>(etherscanKey(chainId)) ?? "";
 
     params.append("apikey", apiKey);
 
@@ -58,8 +62,9 @@ export class EtherscanService {
     return result.result;
   }
 
-  private async getLatestTransmit(feed: string) {
+  private async getLatestTransmit(chainId: number, feed: string) {
     const result = await this.etherscanRequest<etherscan.Account[]>(
+      chainId,
       new URLSearchParams({
         module: "account",
         action: "txlist",
@@ -82,15 +87,15 @@ export class EtherscanService {
     return tx;
   }
 
-  private getEthClient() {
-    const rpc = this.configService.get<string>("ETHEREUM_RPC_URI") ?? "";
+  private getEthClient(chainId: number) {
+    const rpc = this.configService.get<string>(rpcUri(chainId)) ?? "";
     return createPublicClient({ chain: mainnet, transport: http(rpc) });
   }
 
-  async getLatestRoundId(feed: string) {
-    const tx = await this.getLatestTransmit(feed);
+  async getLatestRoundId(chainId: number, feed: string) {
+    const tx = await this.getLatestTransmit(chainId, feed);
 
-    const receipt = await this.getEthClient().getTransactionReceipt({
+    const receipt = await this.getEthClient(chainId).getTransactionReceipt({
       hash: tx.hash,
     });
 
@@ -103,8 +108,9 @@ export class EtherscanService {
     return (args as any).aggregatorRoundId as number;
   }
 
-  async getSetConfigData(address: string) {
+  async getSetConfigData(chainId: number, address: string) {
     const result = await this.etherscanRequest<etherscan.Account[]>(
+      chainId,
       new URLSearchParams({
         module: "account",
         action: "txlist",
@@ -130,7 +136,7 @@ export class EtherscanService {
     return tx.input;
   }
 
-  async getRoundData(feed: string, roundId: number) {
+  async getRoundData(chainId: number, feed: string, roundId: number) {
     const topic1 = encodeAbiParameters(
       [{ name: "x", type: "uint32" }],
       [roundId]
@@ -138,6 +144,7 @@ export class EtherscanService {
 
     // TODO: page this
     const result = await this.etherscanRequest<etherscan.Log[]>(
+      chainId,
       new URLSearchParams({
         module: "logs",
         action: "getLogs",
@@ -159,14 +166,14 @@ export class EtherscanService {
       throw new NotFoundException("");
     }
 
-    const tx = await this.getEthClient().getTransaction({
+    const tx = await this.getEthClient(chainId).getTransaction({
       hash: result[0].transactionHash,
     });
 
     return { data: tx.input };
   }
 
-  async getConstructorArguments(_address: string) {
+  async getConstructorArguments(chainId: number, _address: string) {
     return [
       "0",
       "0",
