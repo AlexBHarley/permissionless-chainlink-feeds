@@ -645,7 +645,7 @@ import "./TypeAndVersionInterface.sol";
             // 4-byte epoch
             // 1-byte round
 
-            // TODO: figure out why there is a mismatch here
+            // Note: mismatch here because contract addresses are different
             // bytes16 configDigest = bytes16(r.rawReportContext << 88);
             // require(
             //   r.hotVars.latestConfigDigest == configDigest,
