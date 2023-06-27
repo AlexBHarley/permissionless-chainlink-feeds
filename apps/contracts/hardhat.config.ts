@@ -28,8 +28,8 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "",
-        blockNumber: 37251544,
+        url: "https://eth-goerli.g.alchemy.com/v2/fwQ4Pl8frO_5W87Qi9PzUtvI0jtIq3yj",
+        blockNumber: 9244476,
       },
       allowUnlimitedContractSize: true,
       loggingEnabled: false,
