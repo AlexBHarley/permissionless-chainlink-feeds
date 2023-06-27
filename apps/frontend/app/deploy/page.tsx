@@ -1,18 +1,17 @@
 "use client";
 
+import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import { chainIdToMetadata } from "@hyperlane-xyz/sdk";
 import { useEffect, useState } from "react";
 import {
   Address,
   useContractRead,
-  useContractWrite,
   useTransaction,
   useWalletClient,
 } from "wagmi";
-import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
-import { objMap, chainMetadata, chainIdToMetadata } from "@hyperlane-xyz/sdk";
 
-import { abi, bytecode } from "../../artifacts/ChainlinkAggregator.json";
 import OffchainAggregatorAbi from "../../abis/OffchainAggregator.json";
+import { abi, bytecode } from "../../artifacts/ChainlinkAggregator.json";
 
 const CHAINS = Object.values(chainIdToMetadata);
 
@@ -27,7 +26,10 @@ export default function Deploy() {
   const [origin, setOrigin] = useState(1);
   const [destination, setDestination] = useState(0);
 
-  const transaction = useTransaction({ hash: result, enabled: !!result });
+  const transaction = useTransaction({
+    hash: result as Address,
+    enabled: !!result,
+  });
 
   const description = useContractRead({
     abi: OffchainAggregatorAbi,
@@ -362,8 +364,8 @@ export default function Deploy() {
             Notifications
           </h2>
           <p className="mt-1 text-sm leading-6 text-gray-600">
-            We'll always let you know about important changes, but you pick what
-            else you want to hear about.
+            {"We'll"} always let you know about important changes, but you pick
+            what else you want to hear about.
           </p>
         </div>
 
