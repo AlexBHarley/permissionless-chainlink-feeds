@@ -33,7 +33,7 @@ describe("ChainlinkAggregator", () => {
     [owner, random] = await ethers.getSigners();
     aggregator = (await ethers.deployContract(
       "ChainlinkAggregator",
-      constructor.data,
+      [...constructor.data, await owner.getAddress()],
       owner
     )) as ChainlinkAggregator;
 
@@ -49,23 +49,12 @@ describe("ChainlinkAggregator", () => {
 
     const igpFactory = new TestInterchainGasPaymaster__factory(owner);
     igp = await igpFactory.deploy(await owner.getAddress());
-
-    await aggregator.initialize(
-      destinationMailbox.address,
-      igp.address,
-      aggregator.address, // ism
-      await owner.getAddress()
-    );
   });
 
   it("only owner can setConfig", async () => {
     await expect(
       random.sendTransaction({ to: aggregator.address, data: setConfig.data })
-    ).to.revertedWith("Ownable: caller is not the owner");
-  });
-
-  it("only mailbox can verify", async () => {
-    await expect(aggregator.verify("0x", "0x")).to.revertedWith("!mailbox");
+    ).to.revertedWith("Only callable by owner");
   });
 
   it("setConfig works", async () => {

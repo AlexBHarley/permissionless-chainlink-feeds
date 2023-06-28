@@ -8,7 +8,6 @@ import { API_ENDPOINT, FEED_ADDRESS, ORIGIN_DOMAIN, apiFetch } from "./utils";
 
 async function main() {
   const [signer] = await ethers.getSigners();
-  const chainId = await signer.getChainId();
 
   const [constructorArguments, setConfigData]: [string[], string] =
     await Promise.all([
