@@ -51,7 +51,6 @@ export class EtherscanService {
     const result = response.data;
     if (response.status !== 200 || isEtherscanError(result)) {
       console.log(response.data);
-
       throw new Error("etherscan");
     }
 
@@ -99,8 +98,6 @@ export class EtherscanService {
   }
 
   async getLatestRoundId(chainId: number, feed: string) {
-    console.log(chainId, feed);
-
     const aggregator = await this.getAggregator(chainId, feed);
     const tx = await this.getLatestTransmit(chainId, aggregator);
 

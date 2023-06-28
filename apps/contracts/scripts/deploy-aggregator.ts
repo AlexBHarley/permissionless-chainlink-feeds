@@ -1,7 +1,3 @@
-import {
-  chainIdToMetadata,
-  hyperlaneContractAddresses,
-} from "@hyperlane-xyz/sdk";
 import { ethers } from "hardhat";
 
 import { API_ENDPOINT, FEED_ADDRESS, ORIGIN_DOMAIN, apiFetch } from "./utils";
@@ -11,11 +7,11 @@ async function main() {
 
   const [constructorArguments, setConfigData]: [string[], string] =
     await Promise.all([
-      apiFetch(`/constructor_arguments/${ORIGIN_DOMAIN}/${FEED_ADDRESS}`).then(
+      apiFetch(`/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/constructor_arguments`).then(
         (x) => x.json()
       ),
-      apiFetch(`/set_config_data/${ORIGIN_DOMAIN}/${FEED_ADDRESS}`).then((x) =>
-        x.text()
+      apiFetch(`/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/set_config_data`).then((x) =>
+        x.json()
       ),
     ]);
 
@@ -34,7 +30,7 @@ async function main() {
   console.log("[Aggregator] setConfig");
 
   const setOffchainUrls = await aggregator.setOffchainUrls([
-    `${API_ENDPOINT}/round_data/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/{data}`,
+    `${API_ENDPOINT}/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/round_data`,
   ]);
   await setOffchainUrls.wait();
 

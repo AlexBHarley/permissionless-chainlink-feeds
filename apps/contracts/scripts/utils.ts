@@ -1,6 +1,6 @@
 import { fetch } from "cross-fetch";
 
-export const API_ENDPOINT = "http://localhost:3000";
+export const API_ENDPOINT = "http://localhost:3000/api";
 
 export const ORIGIN_DOMAIN = 5;
 export const DESTINATION_DOMAIN = 80001;
@@ -9,7 +9,7 @@ export const DESTINATION_DOMAIN = 80001;
 export const FEED_ADDRESS = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
 
 // Fill this in with your deployed aggregator address
-export const AGGREGATOR_ADDRESS = "0x46F5d5E866B3ac5c8fF099568fD9c5e69e01F1d6";
+export const AGGREGATOR_ADDRESS = "0xc57606b4dCFad9dCaa1932b0A7bD2f0C10240834";
 
 export async function apiFetch(path: string, options?: RequestInit) {
   const response = await fetch(`${API_ENDPOINT}${path}`, options);

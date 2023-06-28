@@ -19,7 +19,7 @@ async function main() {
   const chainId = await signer.getChainId();
 
   const latestRoundId = await apiFetch(
-    `/latest_round_id/${chainId}/${FEED_ADDRESS}`
+    `/${chainId}/${FEED_ADDRESS}/latest_round_id`
   ).then((x) => x.json());
   console.log("[update-answer] latestRoundId", latestRoundId);
 

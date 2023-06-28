@@ -1,11 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { EtherscanService } from "../_shared";
+import { utils } from "@hyperlane-xyz/utils";
+import { EtherscanService } from "./_shared";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { chainId, feed, roundId } = req.query;
+  const { chainId, feed } = req.query;
+  const { data: message } = req.body;
+
+  const { body: roundId } = utils.parseMessage(message);
 
   return res.json(
     await new EtherscanService().getRoundData(
