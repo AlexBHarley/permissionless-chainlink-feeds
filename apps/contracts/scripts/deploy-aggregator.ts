@@ -20,22 +20,12 @@ async function main() {
       ),
     ]);
 
-  const aggregator = await ethers.deployContract(
-    "ChainlinkAggregator",
-    constructorArguments
-  );
+  const aggregator = await ethers.deployContract("ChainlinkAggregator", [
+    ...constructorArguments,
+    await signer.getAddress(),
+  ]);
   const deploy = await aggregator.deployTransaction.wait();
   console.log("[Aggregator] deployed to", deploy.contractAddress);
-
-  const addresses = hyperlaneContractAddresses[chainIdToMetadata[chainId].name];
-  const init = await aggregator.initialize(
-    addresses.mailbox, // mailbox
-    addresses.interchainGasPaymaster, // gas paymaster
-    aggregator.address, // ism, itself in this case
-    signer.address // owner, recommend setting this to a multi sig at the very least
-  );
-  await init.wait();
-  console.log("[Aggregator] initialized");
 
   const setConfig = await signer.sendTransaction({
     to: aggregator.address,

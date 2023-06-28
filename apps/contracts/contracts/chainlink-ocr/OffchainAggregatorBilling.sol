@@ -3,8 +3,7 @@ pragma solidity ^0.8.13;
 
 import "./AccessControllerInterface.sol";
 import "./LinkTokenInterface.sol";
-
-// import "./Owned.sol";
+import "./Owned.sol";
 
 /**
  * @notice tracks administration of oracle-reward and gas-reimbursement parameters.
@@ -40,7 +39,7 @@ import "./LinkTokenInterface.sol";
  * parameters), a billing admin cannot take away funds that are already
  * marked for payment.
 */
-/* is Owned */ contract OffchainAggregatorBilling {
+contract OffchainAggregatorBilling is Owned {
     // Maximum number of oracles the offchain reporting protocol is designed for
     uint256 internal constant maxNumOracles = 31;
 

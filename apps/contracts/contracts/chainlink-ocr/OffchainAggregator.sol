@@ -5,7 +5,7 @@ import "./AccessControllerInterface.sol";
 import "./AggregatorV2V3Interface.sol";
 import "./AggregatorValidatorInterface.sol";
 import "./LinkTokenInterface.sol";
-// import "./Owned.sol";
+import "./Owned.sol";
 import "./OffchainAggregatorBilling.sol";
 import "./TypeAndVersionInterface.sol";
 
@@ -16,6 +16,7 @@ import "./TypeAndVersionInterface.sol";
   * @dev doc, which refers to this contract as simply the "contract".
 */
 contract OffchainAggregator is
+    Owned,
     OffchainAggregatorBilling,
     AggregatorV2V3Interface,
     TypeAndVersionInterface

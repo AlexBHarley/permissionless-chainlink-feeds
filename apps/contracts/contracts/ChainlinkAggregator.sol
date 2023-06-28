@@ -1,19 +1,22 @@
 pragma solidity ^0.8.13;
 
-import "./chainlink-ocr/OffchainAggregator.sol";
-
-import {AbstractCcipReadIsm} from "@hyperlane-xyz/core/contracts/isms/ccip-read/AbstractCcipReadIsm.sol";
-import {IInterchainSecurityModule} from "@hyperlane-xyz/core/contracts/interfaces/IInterchainSecurityModule.sol";
-import {AbstractMultisigIsm} from "@hyperlane-xyz/core/contracts/isms/multisig/AbstractMultisigIsm.sol";
+import {AbstractCcipReadIsm, OffchainLookup} from "@hyperlane-xyz/core/contracts/isms/ccip-read/AbstractCcipReadIsm.sol";
+import {IInterchainSecurityModule, ISpecifiesInterchainSecurityModule} from "@hyperlane-xyz/core/contracts/interfaces/IInterchainSecurityModule.sol";
+import {IMailbox} from "@hyperlane-xyz/core/contracts/interfaces/IMailbox.sol";
 import {Message} from "@hyperlane-xyz/core/contracts/libs/Message.sol";
-import {HyperlaneConnectionClient} from "@hyperlane-xyz/core/contracts/HyperlaneConnectionClient.sol";
+
+import "./chainlink-ocr/OffchainAggregator.sol";
 
 contract ChainlinkAggregator is
     OffchainAggregator,
     AbstractCcipReadIsm,
-    HyperlaneConnectionClient
+    ISpecifiesInterchainSecurityModule
 {
     using Message for bytes;
+
+    IMailbox mailbox;
+
+    string[] public offchainUrls;
 
     /*
      * @param _maximumGasPrice highest gas price for which transmitter will be compensated
@@ -41,7 +44,8 @@ contract ChainlinkAggregator is
         AccessControllerInterface _billingAccessController,
         AccessControllerInterface _requesterAccessController,
         uint8 _decimals,
-        string memory _description
+        string memory _description,
+        IMailbox _mailbox
     )
         OffchainAggregator(
             _maximumGasPrice,
@@ -57,37 +61,14 @@ contract ChainlinkAggregator is
             _decimals,
             _description
         )
-    {}
-
-    /**
-     * @notice Initializes the Router contract with Hyperlane core contracts and the address of the interchain security module.
-     * @param _mailbox The address of the mailbox contract.
-     * @param _interchainGasPaymaster The address of the interchain gas paymaster contract.
-     * @param _interchainSecurityModule The address of the interchain security module contract.
-     * @param _owner The address with owner privileges.
-     */
-    function initialize(
-        address _mailbox,
-        address _interchainGasPaymaster,
-        address _interchainSecurityModule,
-        address _owner
-    ) external initializer {
-        __HyperlaneConnectionClient_initialize(
-            _mailbox,
-            _interchainGasPaymaster,
-            _interchainSecurityModule,
-            _owner
-        );
+    {
+        mailbox = _mailbox;
     }
 
     /**
      * No-op, everything happens in the verify function
      */
-    function handle(
-        uint32,
-        bytes32,
-        bytes calldata _report
-    ) public onlyMailbox {}
+    function handle(uint32, bytes32, bytes calldata _report) public {}
 
     /**
      * @notice sets offchain reporting protocol configuration incl. participating oracles
@@ -120,7 +101,7 @@ contract ChainlinkAggregator is
     function verify(
         bytes calldata _metadata,
         bytes calldata _message
-    ) external onlyMailbox returns (bool) {
+    ) external returns (bool) {
         (
             bytes memory _report,
             bytes32[] memory _rs,
@@ -138,6 +119,32 @@ contract ChainlinkAggregator is
     function setOffchainUrls(string[] memory urls) external onlyOwner {
         require(urls.length > 0, "!length");
         offchainUrls = urls;
-        emit OffchainUrlsUpdated(urls);
+    }
+
+    function interchainSecurityModule()
+        external
+        view
+        returns (IInterchainSecurityModule)
+    {
+        return IInterchainSecurityModule(address(this));
+    }
+
+    function getOffchainVerifyInfo(
+        bytes calldata _message
+    ) external view override returns (bool) {
+        revert OffchainLookup(
+            address(this),
+            offchainUrls,
+            _message,
+            ChainlinkAggregator.process.selector,
+            ""
+        );
+    }
+
+    function process(
+        bytes calldata _metadata,
+        bytes calldata _message
+    ) external {
+        mailbox.process(_metadata, _message);
     }
 }
