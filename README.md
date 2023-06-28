@@ -8,7 +8,7 @@ By deploying a slightly modified (simplified) version of the [Chainlink Offchain
 
 ### Getting started
 
-As of 26.6.23 there doesn't exist a UI for easily deploying these price feeds, but if you're happy to run a few commands via the CLI you can get up and running in 5 minutes. For testing purposes the following guide will setup a [ETH/USD](https://data.chain.link/) feed from Goerli to Mumbai, but feel free to alter these variables as you see fit ([here](./contracts/scripts/utils.ts)).
+As of 26.6.23 there doesn't exist a UI for easily deploying these price feeds, but if you're happy to run a few commands via the CLI you can get up and running in 5 minutes. For testing purposes the following guide will setup a [ETH/USD](https://data.chain.link/) feed from Goerli to Mumbai, but feel free to alter these variables as you see fit ([here](./apps/contracts/scripts/utils.ts)).
 
 We'll first get your dependencies installed by running,
 
@@ -16,14 +16,14 @@ We'll first get your dependencies installed by running,
 ➜  pnpm install
 ```
 
-#### Chainlink API proxy
+#### API and frontend
 
-This service handles querying Chainlink specific data either from the chain itself or via an indexing provider like Etherscan or Moralis.
+The API handles querying Chainlink specific data either from the chain itself or via an indexing provider like Etherscan or Moralis.
 
 First, setup your environment variables,
 
 ```
-➜  cd apps/api
+➜  cd apps/frontend
 ➜  cd .env.example .env
 ```
 
@@ -33,12 +33,14 @@ And then run the service,
 ➜  pnpm dev
 ```
 
+If you'd prefer to not run this service, you can rely on an already live one at https://permissionless-chainlink-feeds-frontend.vercel.app. Just make sure to replace the `API_ENDPOINT` variable in [apps/contracts/scripts/utils.ts](./apps/contracts/scripts/utils.ts) with this live URL.
+
 #### Smart contracts
 
 Again we need to first we need to setup our environment variables,
 
 ```
-➜  cd contracts
+➜  cd app/contracts
 ➜  cp .env.example .env
 ```
 
