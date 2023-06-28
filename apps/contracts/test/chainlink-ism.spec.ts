@@ -1,18 +1,8 @@
-import {
-  InterchainGasPaymaster,
-  TestInterchainGasPaymaster__factory,
-} from "@hyperlane-xyz/core";
-import { utils } from "@hyperlane-xyz/utils";
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { ethers } from "hardhat";
 
-import {
-  ChainlinkAggregator,
-  MockMailbox,
-  MockMailbox__factory,
-} from "../typechain";
-
+import { ChainlinkAggregator } from "../typechain";
 import * as constructor from "./data/constructor";
 import * as setConfig from "./data/set-config";
 import * as transmit from "./data/transmit";
@@ -22,12 +12,6 @@ describe("ChainlinkAggregator", () => {
   let random: Signer;
 
   let aggregator: ChainlinkAggregator;
-  let originMailbox: MockMailbox;
-  let destinationMailbox: MockMailbox;
-  let igp: InterchainGasPaymaster;
-
-  const ORIGIN = 1;
-  const DESTINATION = 2;
 
   before(async () => {
     [owner, random] = await ethers.getSigners();
@@ -36,19 +20,6 @@ describe("ChainlinkAggregator", () => {
       [...constructor.data, await owner.getAddress()],
       owner
     )) as ChainlinkAggregator;
-
-    const mailboxFactory = new MockMailbox__factory(owner);
-    originMailbox = await mailboxFactory.deploy(ORIGIN);
-    destinationMailbox = await mailboxFactory.deploy(DESTINATION);
-
-    await originMailbox.addRemoteMailbox(
-      DESTINATION,
-      destinationMailbox.address
-    );
-    await destinationMailbox.addRemoteMailbox(ORIGIN, originMailbox.address);
-
-    const igpFactory = new TestInterchainGasPaymaster__factory(owner);
-    igp = await igpFactory.deploy(await owner.getAddress());
   });
 
   it("only owner can setConfig", async () => {
@@ -80,14 +51,7 @@ describe("ChainlinkAggregator", () => {
   });
 
   it("verifies and records round data", async () => {
-    await originMailbox.dispatch(
-      DESTINATION,
-      utils.addressToBytes32(aggregator.address),
-      transmit.data
-    );
-    await destinationMailbox.processNextInboundMessage(transmit.data, {
-      gasLimit: 2_000_000,
-    });
+    await aggregator.verify(transmit.data, "0x");
 
     const { roundId, answer, answeredInRound } =
       await aggregator.latestRoundData();
