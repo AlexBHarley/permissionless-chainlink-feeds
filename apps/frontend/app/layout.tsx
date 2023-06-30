@@ -3,6 +3,13 @@
 import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from "react-query";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import {
@@ -54,6 +61,8 @@ const wagmiConfig = createConfig({
   publicClient,
 });
 
+const queryClient = new QueryClient();
+
 export default function RootLayout({
   children,
 }: {
@@ -64,17 +73,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains}>
-            <main className="max-w-screen-md mx-auto">
-              <div className="flex space-x-8">
-                <Navigation />
+        <QueryClientProvider client={queryClient}>
+          <WagmiConfig config={wagmiConfig}>
+            <RainbowKitProvider chains={chains}>
+              <main className="max-w-screen-md mx-auto">
+                <div className="flex space-x-8">
+                  <Navigation />
 
-                {children}
-              </div>
-            </main>
-          </RainbowKitProvider>
-        </WagmiConfig>
+                  {children}
+                </div>
+              </main>
+            </RainbowKitProvider>
+          </WagmiConfig>
+        </QueryClientProvider>
       </body>
     </html>
   );

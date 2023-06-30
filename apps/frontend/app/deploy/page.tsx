@@ -1,10 +1,16 @@
 "use client";
 
-import { chainIdToMetadata } from "@hyperlane-xyz/sdk";
+import {
+  chainIdToMetadata,
+  hyperlaneContractAddresses,
+} from "@hyperlane-xyz/sdk";
 import { useEffect, useState } from "react";
 import {
   Address,
+  useAccount,
+  useChainId,
   useContractReads,
+  usePublicClient,
   useTransaction,
   useWalletClient,
 } from "wagmi";
@@ -12,26 +18,30 @@ import {
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 import OffchainAggregatorAbi from "../../abis/OffchainAggregator.json";
 import { abi, bytecode } from "../../artifacts/ChainlinkAggregator.json";
+import { useRouter } from "next/navigation";
+import { useQuery } from "react-query";
 
 const CHAINS = Object.values(chainIdToMetadata);
 
 export default function Deploy() {
-  const wallet = useWalletClient();
+  const router = useRouter();
+  const client = usePublicClient();
+  const chainId = useChainId();
   const [feed, setFeed] = useState(
     "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"
   );
 
+  const constructorData = useQuery("constructorData", () =>
+    fetch(`/api/${origin}/${feed}/constructor_arguments`).then((x) => x.json())
+  );
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [result, setResult] = useState("");
 
   const [origin, setOrigin] = useState(5);
   const [destination, setDestination] = useState(80001);
 
-  const transaction = useTransaction({
-    hash: result as Address,
-    enabled: !!result,
-  });
+  const wallet = useWalletClient({ chainId: destination });
 
   const aggregator = useContractReads({
     contracts: [
@@ -65,21 +75,31 @@ export default function Deploy() {
 
   const onDeploy = async () => {
     try {
+      if (chainId !== destination) {
+        await wallet.data?.switchChain({ id: destination });
+      }
+
       setLoading(true);
       setError(null);
       const a = await wallet.data!.deployContract({
         abi,
         bytecode: bytecode as Address,
+        args: [
+          ...constructorData.data,
+          hyperlaneContractAddresses[chainIdToMetadata[destination].name]
+            .mailbox,
+        ],
       });
-      setResult(a);
+
+      const b = await client.waitForTransactionReceipt({ hash: a });
+
+      router.push(`/${b.contractAddress}/initialise`);
     } catch (e: any) {
       setError(e);
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {}, [transaction.data]);
 
   const onSelectOrigin = (displayName: string) => {
     const c = CHAINS.find((x) => x.displayName === displayName);
@@ -97,7 +117,6 @@ export default function Deploy() {
         aggregator.data[1].result[1] / BigInt(10 ** aggregator.data[2].result)
       }`
     : null;
-  console.log(description);
 
   return (
     <div className="space-y-10 divide-y divide-gray-900/10 w-full mt-10">
@@ -179,15 +198,16 @@ export default function Deploy() {
         <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
           <button
             type="button"
+            onClick={() => router.back()}
             className="text-sm font-semibold leading-6 text-gray-900"
           >
-            Cancel
+            Back
           </button>
           <button
-            type="submit"
+            onClick={onDeploy}
             className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
-            Save
+            Deploy
           </button>
         </div>
       </div>
