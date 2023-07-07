@@ -22,8 +22,8 @@ import {
   polygonMumbai,
   sepolia,
 } from "wagmi/chains";
-
 import { publicProvider } from "wagmi/providers/public";
+
 import { Navigation } from "../components/Navigation";
 
 const { chains, publicClient } = configureChains(
@@ -71,10 +71,10 @@ export default function RootLayout({
             <WagmiConfig config={wagmiConfig}>
               <RainbowKitProvider chains={chains}>
                 <Navigation>{children}</Navigation>
+                <Toaster />
               </RainbowKitProvider>
             </WagmiConfig>
           </QueryClientProvider>
-          <Toaster />
         </main>
       </body>
     </html>

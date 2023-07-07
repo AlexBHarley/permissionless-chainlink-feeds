@@ -160,6 +160,11 @@ export default function Initialise({
           integration is working.
         </div>
 
+        <div className="">
+          After triggering a round update it could take a couple minutes for the
+          round data to land on your destination chain.
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
             {latestAnswer ? (
