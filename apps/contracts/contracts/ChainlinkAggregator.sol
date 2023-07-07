@@ -18,21 +18,17 @@ contract ChainlinkAggregator is
 
     string[] public offchainUrls;
 
-    /*
-     * @param _maximumGasPrice highest gas price for which transmitter will be compensated
-     * @param _reasonableGasPrice transmitter will receive reward for gas prices under this value
-     * @param _microLinkPerEth reimbursement per ETH of gas cost, in 1e-6LINK units
-     * @param _linkGweiPerObservation reward to oracle for contributing an observation to a successfully transmitted report, in 1e-9LINK units
-     * @param _linkGweiPerTransmission reward to transmitter of a successful report, in 1e-9LINK units
-     * @param _link address of the LINK contract
-     * @param _minAnswer lowest answer the median of a report is allowed to be
-     * @param _maxAnswer highest answer the median of a report is allowed to be
-     * @param _billingAccessController access controller for billing admin functions
-     * @param _requesterAccessController access controller for requesting new rounds
-     * @param _decimals answers are stored in fixed-point format, with this many digits of precision
-     * @param _description short human-readable description of observable this contract's answers pertain to
+    /**
+     * For ease of deployment & initialisation, two things are bundled in here.
+     *
+     * 1. Constructor data for the Chainlink OffchainAggregator
+     * 2. Hyperlane specific things like the Mailbox address and CCIP Read ISM URLs.
+     *
+     * setConfig data can unfortunately not be passed here as the OffchainAggregator expects
+     * calldata variables
      */
     constructor(
+        // OffchainAggregator
         uint32 _maximumGasPrice,
         uint32 _reasonableGasPrice,
         uint32 _microLinkPerEth,
@@ -45,7 +41,9 @@ contract ChainlinkAggregator is
         AccessControllerInterface _requesterAccessController,
         uint8 _decimals,
         string memory _description,
-        IMailbox _mailbox
+        // Hyperlane
+        IMailbox _mailbox,
+        string[] memory _offchainUrls
     )
         OffchainAggregator(
             _maximumGasPrice,
@@ -63,6 +61,7 @@ contract ChainlinkAggregator is
         )
     {
         mailbox = _mailbox;
+        offchainUrls = _offchainUrls;
     }
 
     /**
@@ -131,13 +130,13 @@ contract ChainlinkAggregator is
 
     function getOffchainVerifyInfo(
         bytes calldata _message
-    ) external view override returns (bool) {
+    ) external view override {
         revert OffchainLookup(
             address(this),
             offchainUrls,
             _message,
             ChainlinkAggregator.process.selector,
-            ""
+            _message
         );
     }
 

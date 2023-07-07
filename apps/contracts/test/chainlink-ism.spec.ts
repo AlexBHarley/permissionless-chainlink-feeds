@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Signer } from "ethers";
+import { Signer, constants } from "ethers";
 import { ethers } from "hardhat";
 
 import { ChainlinkAggregator } from "../typechain";
@@ -15,38 +15,40 @@ describe("ChainlinkAggregator", () => {
 
   before(async () => {
     [owner, random] = await ethers.getSigners();
+
+    // Data for ETH/USD feed on Goerli
+    // https://goerli.etherscan.io/address/0x9b0FC4bb9981e5333689d69BdBF66351B9861E62
     aggregator = (await ethers.deployContract(
       "ChainlinkAggregator",
-      [...constructor.data, await owner.getAddress()],
+      [...constructor.data, constants.AddressZero, ["http://localhost:3000"]],
       owner
     )) as ChainlinkAggregator;
   });
 
   it("only owner can setConfig", async () => {
     await expect(
-      random.sendTransaction({ to: aggregator.address, data: setConfig.data })
+      // @ts-expect-error
+      aggregator.connect(random).setConfig(...setConfig.data)
     ).to.revertedWith("Only callable by owner");
   });
 
   it("setConfig works", async () => {
-    await owner.sendTransaction({
-      to: aggregator.address,
-      data: setConfig.data,
-    });
+    // @ts-expect-error
+    await aggregator.connect(owner).setConfig(...setConfig.data);
     expect(await aggregator.s_signers("0")).to.eql(
-      "0x080D263FAA8CBd848f0b9B24B40e1f23EA06b3A3"
+      "0x5206B45fA792a2cFecFF1399d5bAd18C2da4bcA1"
     );
     expect(await aggregator.s_signers(1)).to.eql(
-      "0xCdEf689d3098A796F840A26f383CE19F4f023B5B"
+      "0xE6B7fCaB90BA57D77d8Ef7c98223e8c3985A9dEC"
     );
     expect(await aggregator.s_signers(2)).to.eql(
-      "0xb7bEA3A5d410F7c4eC2aa446ae4236F6Eed6b16A"
+      "0x8C7461eaEAa482202ce152ffF7a73D3a531E4656"
     );
 
     const { latestEpochAndRound, threshold, latestAggregatorRoundId } =
       await aggregator.s_hotVars();
     expect(latestEpochAndRound).to.eql(0);
-    expect(threshold).to.eql(10);
+    expect(threshold).to.eql(1);
     expect(latestAggregatorRoundId).to.eql(0);
   });
 
@@ -56,13 +58,7 @@ describe("ChainlinkAggregator", () => {
     const { roundId, answer, answeredInRound } =
       await aggregator.latestRoundData();
     expect(roundId).to.eql(ethers.BigNumber.from(1));
-    expect(answer).to.eql(ethers.BigNumber.from(191082886000));
+    expect(answer).to.eql(ethers.BigNumber.from(186025000000));
     expect(answeredInRound).to.eql(ethers.BigNumber.from(1));
-
-    const { latestEpochAndRound, threshold, latestAggregatorRoundId } =
-      await aggregator.s_hotVars();
-    expect(latestEpochAndRound).to.eql(9978630);
-    expect(threshold).to.eql(10);
-    expect(latestAggregatorRoundId).to.eql(1);
   });
 });

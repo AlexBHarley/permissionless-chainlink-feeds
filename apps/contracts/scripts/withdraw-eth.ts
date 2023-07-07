@@ -3,7 +3,7 @@ import hre from "hardhat";
 async function main() {
   const a = await hre.ethers.getContractAt(
     "GelatoAutomate",
-    "0x35531c8056286FC96b4e36E2016F1d22006EF151"
+    "0xf19c411808288e78bb7c7dec2b782217b0666838"
   );
 
   try {

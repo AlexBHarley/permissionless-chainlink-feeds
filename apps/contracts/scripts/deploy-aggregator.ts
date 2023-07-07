@@ -1,40 +1,32 @@
 import { ethers } from "hardhat";
+import { hyperlaneContractAddresses } from "@hyperlane-xyz/sdk";
 
 import { API_ENDPOINT, FEED_ADDRESS, ORIGIN_DOMAIN, apiFetch } from "./utils";
 
 async function main() {
   const [signer] = await ethers.getSigners();
 
-  const [constructorArguments, setConfigData]: [string[], string] =
+  const [constructorArguments, setConfigArguments]: [string[], string] =
     await Promise.all([
       apiFetch(`/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/constructor_arguments`).then(
         (x) => x.json()
       ),
-      apiFetch(`/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/set_config_data`).then((x) =>
-        x.json()
+      apiFetch(`/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/set_config_arguments`).then(
+        (x) => x.json()
       ),
     ]);
 
   const aggregator = await ethers.deployContract("ChainlinkAggregator", [
     ...constructorArguments,
-    await signer.getAddress(),
+    hyperlaneContractAddresses[await signer.getChainId()].mailbox,
+    `${API_ENDPOINT}/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/round_data`,
   ]);
   const deploy = await aggregator.deployTransaction.wait();
   console.log("[Aggregator] deployed to", deploy.contractAddress);
 
-  const setConfig = await signer.sendTransaction({
-    to: aggregator.address,
-    data: setConfigData,
-  });
+  const setConfig = await aggregator.setConfig(...setConfigArguments);
   await setConfig.wait();
   console.log("[Aggregator] setConfig");
-
-  const setOffchainUrls = await aggregator.setOffchainUrls([
-    `${API_ENDPOINT}/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/round_data`,
-  ]);
-  await setOffchainUrls.wait();
-
-  console.log("[Aggregator] setOffchainUrls");
 }
 
 main().catch((error) => {

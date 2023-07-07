@@ -3,7 +3,9 @@ import Axios from "axios";
 import {
   Address,
   createPublicClient,
+  decodeDeployData,
   decodeEventLog,
+  decodeFunctionData,
   encodeAbiParameters,
   http,
   keccak256,
@@ -57,14 +59,14 @@ export class EtherscanService {
     return result.result;
   }
 
-  private async getAggregator(chainId: number, feed: string): Promise<string> {
+  private async getAggregator(chainId: number, feed: string): Promise<Address> {
     const client = this.getEthClient(chainId);
 
     return (await client.readContract({
       address: feed as Address,
       abi: PriceFeedAbi,
       functionName: "aggregator",
-    })) as string;
+    })) as Address;
   }
 
   private async getLatestTransmit(chainId: number, aggregator: string) {
@@ -114,7 +116,7 @@ export class EtherscanService {
     return (args as any).aggregatorRoundId as number;
   }
 
-  async getSetConfigData(chainId: number, feed: string) {
+  async getSetConfigArguments(chainId: number, feed: string) {
     const aggregator = await this.getAggregator(chainId, feed);
 
     const result = await this.etherscanRequest<etherscan.Account[]>(
@@ -142,7 +144,16 @@ export class EtherscanService {
     }
 
     // take latest setConfig call
-    return setConfigTxs[setConfigTxs.length - 1].input;
+    const data = setConfigTxs[setConfigTxs.length - 1].input;
+
+    // @ts-expect-error
+    BigInt.prototype.toJSON = function () {
+      return this.toString();
+    };
+
+    const { args } = decodeFunctionData({ abi: OffchainAggregatorAbi, data });
+
+    return args;
   }
 
   async getRoundData(chainId: number, feed: string, roundId: number) {
@@ -199,45 +210,46 @@ export class EtherscanService {
       "",
     ];
 
-    /**
-     * having some problems with Viem, revisit after
-     * https://github.com/wagmi-dev/viem/pull/777
-     */
+    // Unable to parse this data with Viem https://github.com/wagmi-dev/viem/issues/855
+
     // const aggregator = await this.getAggregator(chainId, feed);
 
-    //   const rpc = this.configService.get<string>('ETHEREUM_RPC_URI') ?? '';
-    //   const client = createPublicClient({ chain: mainnet, transport: http(rpc) });
+    // const [response, bytecode] = await Promise.all([
+    //   this.etherscanRequest(
+    //     chainId,
+    //     new URLSearchParams({
+    //       module: "account",
+    //       action: "txlist",
+    //       address: aggregator,
+    //       startblock: "0",
+    //       endblock: "99999999",
+    //       page: "1",
+    //       offset: "1",
+    //       sort: "asc",
+    //     })
+    //   ),
+    //   this.getEthClient(chainId).getBytecode({
+    //     address: aggregator as Address,
+    //   }),
+    // ]);
 
-    //   const [response, bytecode] = await Promise.all([
-    //     this.etherscanRequest(
-    //       new URLSearchParams({
-    //         module: 'account',
-    //         action: 'txlist',
-    //         address,
-    //         startblock: '0',
-    //         endblock: '99999999',
-    //         page: '1',
-    //         offset: '1',
-    //         sort: 'asc',
-    //       }),
-    //     ),
-    //     client.getBytecode({ address: address as Address }),
-    //   ]);
+    // console.log("input");
+    // console.log(response[0].input);
+    // console.log("bytecode");
+    // console.log(bytecode);
 
-    //   if (!response.data || !bytecode) {
-    //     throw new NotFoundException('');
-    //   }
+    // const { args } = decodeDeployData({
+    //   abi: OffchainAggregatorAbi,
+    //   // viem adds 0x to the data property
+    //   // @ts-expect-error
+    //   data: response[0].input.slice(2),
+    //   // viem adds 0x to bytecode data property
+    //   bytecode: bytecode!.slice(2) as Address,
+    // });
+    // console.log(args);
 
-    //   console.log(response.data.result[0].input);
+    // // console.log(args);
 
-    //   const { args } = decodeDeployData({
-    //     abi: OffchainAggregatorAbi,
-    //     // viem adds 0x to the data property
-    //     // @ts-expect-error
-    //     data: response.data.result[0].input.slice(2),
-    //     bytecode,
-    //   });
-
-    //   console.log(args);
+    // return [];
   }
 }
