@@ -61,4 +61,9 @@ describe("ChainlinkAggregator", () => {
     expect(answer).to.eql(ethers.BigNumber.from(186025000000));
     expect(answeredInRound).to.eql(ethers.BigNumber.from(1));
   });
+
+  it("gets offchain URLs", async () => {
+    const urls = await aggregator.getOffchainUrls();
+    expect(urls).to.eql(["http://localhost:3000"]);
+  });
 });

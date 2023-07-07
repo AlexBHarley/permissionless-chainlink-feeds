@@ -120,6 +120,10 @@ contract ChainlinkAggregator is
         offchainUrls = urls;
     }
 
+    function getOffchainUrls() external view returns (string[] memory) {
+        return offchainUrls;
+    }
+
     function interchainSecurityModule()
         external
         view

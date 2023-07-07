@@ -5,14 +5,7 @@ import { FC } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 
-const steps = [
-  "Welcome",
-  "Deploy",
-  "Initialise",
-  "Fund",
-  "Trigger",
-  "Automate",
-];
+const steps = ["Welcome", "Deploy", "Initialise", "Trigger", "Automate"];
 
 type Status = "done" | "doing" | "not-done";
 
@@ -47,6 +40,8 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
                 return pathname?.includes(x.toLowerCase());
               });
 
+              const link = step === "Welcome" ? "/" : `/${step.toLowerCase()}`;
+
               const status: Status =
                 currentStepIndex === index
                   ? "doing"
@@ -57,7 +52,7 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
                 <li key={step}>
                   {status === "done" ? (
                     <Link
-                      href={`/${step.toLowerCase()}`}
+                      href={link}
                       className="flex items-start"
                       aria-current="step"
                     >

@@ -1,38 +1,29 @@
 "use client";
 
-import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import "../styles/globals.css";
 
+import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
+import { Toaster } from "react-hot-toast";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from "react-query";
-import {
-  ConnectButton,
-  getDefaultWallets,
-  RainbowKitProvider,
-} from "@rainbow-me/rainbowkit";
-import { configureChains, createConfig, useAccount, WagmiConfig } from "wagmi";
-import {
-  mainnet,
-  goerli,
-  sepolia,
-  optimism,
-  optimismGoerli,
-  polygon,
-  polygonMumbai,
   arbitrum,
   arbitrumGoerli,
   avalanche,
   avalancheFuji,
   bsc,
   bscTestnet,
+  goerli,
+  mainnet,
+  optimism,
+  optimismGoerli,
+  polygon,
+  polygonMumbai,
+  sepolia,
 } from "wagmi/chains";
+
 import { publicProvider } from "wagmi/providers/public";
-import { useRouter } from "next/navigation";
 import { Navigation } from "../components/Navigation";
 
 const { chains, publicClient } = configureChains(
@@ -55,8 +46,8 @@ const { chains, publicClient } = configureChains(
 );
 
 const { connectors } = getDefaultWallets({
-  appName: "ICA Demo",
-  projectId: "ica-demo",
+  appName: "Permissionless Chainlink Feeds",
+  projectId: "permissionless-fhainlink-feeds",
   chains,
 });
 const wagmiConfig = createConfig({
@@ -75,15 +66,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <QueryClientProvider client={queryClient}>
-          <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider chains={chains}>
-              <main className="max-w-screen-md mx-auto">
+        <main className="max-w-screen-md mx-auto">
+          <QueryClientProvider client={queryClient}>
+            <WagmiConfig config={wagmiConfig}>
+              <RainbowKitProvider chains={chains}>
                 <Navigation>{children}</Navigation>
-              </main>
-            </RainbowKitProvider>
-          </WagmiConfig>
-        </QueryClientProvider>
+              </RainbowKitProvider>
+            </WagmiConfig>
+          </QueryClientProvider>
+          <Toaster />
+        </main>
       </body>
     </html>
   );

@@ -14,8 +14,8 @@ import {
 import { mainnet } from "viem/chains";
 import { EtherscanError, EtherscanSuccess, isEtherscanError } from "./_types";
 
-import OffchainAggregatorAbi from "../../../../abis/OffchainAggregator.json";
-import PriceFeedAbi from "../../../../abis/PriceFeed.json";
+import EACAggregatorProxyAbi from "../../../../abis/EACAggregatorProxy.json";
+import AccessControlledOffchainAggregatorAbi from "../../../../abis/AccessControlledOffchainAggregator.json";
 import { etherscanKey, rpcUri } from "./_env";
 import * as etherscan from "./_types";
 
@@ -64,7 +64,7 @@ export class EtherscanService {
 
     return (await client.readContract({
       address: feed as Address,
-      abi: PriceFeedAbi,
+      abi: EACAggregatorProxyAbi,
       functionName: "aggregator",
     })) as Address;
   }
@@ -108,7 +108,7 @@ export class EtherscanService {
     });
 
     const { args } = decodeEventLog({
-      abi: OffchainAggregatorAbi,
+      abi: AccessControlledOffchainAggregatorAbi,
       topics: receipt.logs[0].topics,
       data: receipt.logs[0].data,
     });
@@ -151,7 +151,10 @@ export class EtherscanService {
       return this.toString();
     };
 
-    const { args } = decodeFunctionData({ abi: OffchainAggregatorAbi, data });
+    const { args } = decodeFunctionData({
+      abi: AccessControlledOffchainAggregatorAbi,
+      data,
+    });
 
     return args;
   }
