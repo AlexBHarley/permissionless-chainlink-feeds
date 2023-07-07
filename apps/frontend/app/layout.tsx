@@ -10,8 +10,12 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "react-query";
-import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { configureChains, createConfig, WagmiConfig } from "wagmi";
+import {
+  ConnectButton,
+  getDefaultWallets,
+  RainbowKitProvider,
+} from "@rainbow-me/rainbowkit";
+import { configureChains, createConfig, useAccount, WagmiConfig } from "wagmi";
 import {
   mainnet,
   goerli,
@@ -68,8 +72,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const route = useRouter();
-
   return (
     <html lang="en">
       <body>
@@ -77,11 +79,7 @@ export default function RootLayout({
           <WagmiConfig config={wagmiConfig}>
             <RainbowKitProvider chains={chains}>
               <main className="max-w-screen-md mx-auto">
-                <div className="flex space-x-8">
-                  <Navigation />
-
-                  {children}
-                </div>
+                <Navigation>{children}</Navigation>
               </main>
             </RainbowKitProvider>
           </WagmiConfig>

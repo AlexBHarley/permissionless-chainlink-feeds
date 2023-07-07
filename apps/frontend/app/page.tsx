@@ -1,12 +1,12 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/navigation";
-import { useAccount, useChainId } from "wagmi";
+import { useAccount } from "wagmi";
+
+import { classNames } from "../utils/classnames";
 
 export default function Page() {
   const { address } = useAccount();
-  const chainId = useChainId();
   const router = useRouter();
 
   const onNext = () => {
@@ -14,22 +14,25 @@ export default function Page() {
   };
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 my-10">
-      {!address ? (
-        <div className="flex items-center justify-center">
-          <ConnectButton />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="flex items-center justify-center">
-            <ConnectButton />
-          </div>
-        </div>
+    <div className="flex flex-col text-sm space-y-4">
+      <div>
+        Welcome to the Permissionless Chainlink Feed wizard. We'll be deploying
+        a Chainlink feed of your choice to another EVM compatible chain.
+      </div>
+      {!address && (
+        <div className="text-sm">Connect your wallet to get started</div>
       )}
-
-      <div>Welcome to the Permissionless Chainlink Feed Wizard</div>
-
-      <button onClick={onNext}>Next</button>
+      <button
+        className={classNames(
+          `rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 mt-4 ml-auto`,
+          address && "bg-indigo-600 hover:bg-indigo-500",
+          !address && "bg-indigo-400"
+        )}
+        disabled={!address}
+        onClick={onNext}
+      >
+        Next
+      </button>
     </div>
   );
 }
