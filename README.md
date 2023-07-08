@@ -6,7 +6,7 @@ Powered by [Hyperlane](https://hyperlane.xyz), easily bring any [Chainlink](http
 
 By deploying a slightly simplified version of the [Chainlink OffchainAggregator](https://github.com/smartcontractkit/libocr/blob/master/contract/OffchainAggregator.sol), we can replay transactions from any chain Chainlink operates on to your chain. Crucially, and what makes this useful, is we only need to rely on the security of Chainlink oracles themselves to secure these updates.
 
-A full diff of the changes in the OffchainAggregator used for this integration and the official ones deployed by Chainlink can be found by running the following from the root of the repository.
+A full diff of the changes to the OffchainAggregator used for this integration and the official ones deployed by Chainlink can be found by running the following from the root of the repository.
 
 ```
 git diff --no-index ./apps/contracts/chainlink-ocr-original/ ./apps/contracts/contracts/chainlink-ocr/
