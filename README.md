@@ -9,7 +9,7 @@ By deploying a slightly simplified version of the [Chainlink OffchainAggregator]
 A full diff of the changes in the OffchainAggregator used for this integration and the official ones deployed by Chainlink can be found by running the following from the root of the repository.
 
 ```
-git diff --no-index ./apps/contracts/contracts/chainlink-ocr/ ./apps/contracts/contracts/chainlink-ocr-original
+git diff --no-index ./apps/contracts/contracts/chainlink-ocr-original/ ./apps/contracts/contracts/chainlink-ocr/
 ```
 
 ### Deployment
