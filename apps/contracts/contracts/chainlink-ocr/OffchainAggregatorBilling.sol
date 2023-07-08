@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.6;
+pragma solidity ^0.8.13;
 
 import "./AccessControllerInterface.sol";
 import "./LinkTokenInterface.sol";
@@ -135,7 +135,7 @@ contract OffchainAggregatorBilling is Owned {
     internal s_oracles;
 
   // s_signers contains the signing address of each oracle
-  address[] internal s_signers;
+  address[] public s_signers;
 
   // s_transmitters contains the transmission address of each oracle,
   // i.e. the address the oracle actually sends transactions to the contract from
