@@ -161,7 +161,7 @@ export default function Initialise({
     >
       <div className="space-y-6 text-sm leading-6">
         <div className="">
-          We're nearly there, almost everything is setup for your automated
+          {"We're"} nearly there, almost everything is setup for your automated
           price feed. Before we setup said automation, {"let's"} quickly confirm
           that the integration is working by manually triggering a price update.
         </div>

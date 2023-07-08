@@ -126,7 +126,7 @@ export default function Automate({
         </div>
 
         <div className="">
-          For this we'll use{" "}
+          For this {"we'll"} use{" "}
           <Link label="Gelato" link="https://gelato.network" />, a smart
           contract automation platform. All we need to do is deploy our
           automation contract and fund it with a little gas to pay for relays.
