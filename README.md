@@ -4,11 +4,19 @@ Powered by [Hyperlane](https://hyperlane.xyz), easily bring any [Chainlink](http
 
 ### How does it work?
 
-By deploying a slightly modified (simplified) version of the [Chainlink OffchainAggregator](https://github.com/smartcontractkit/libocr/blob/master/contract/OffchainAggregator.sol), we can replay transactions from any chain Chainlink operates on to your chain. Crucially, and what makes this useful, is we only need to rely on the security of Chainlink oracles themselves to secure these updates.
+By deploying a slightly simplified version of the [Chainlink OffchainAggregator](https://github.com/smartcontractkit/libocr/blob/master/contract/OffchainAggregator.sol), we can replay transactions from any chain Chainlink operates on to your chain. Crucially, and what makes this useful, is we only need to rely on the security of Chainlink oracles themselves to secure these updates.
 
-### Getting started
+A full diff of the changes in the OffchainAggregator used for this integration and the official ones deployed by Chainlink can be found by running the following from the root of the repository.
 
-As of 26.6.23 there doesn't exist a UI for easily deploying these price feeds, but if you're happy to run a few commands via the CLI you can get up and running in 5 minutes. For testing purposes the following guide will setup a [ETH/USD](https://data.chain.link/) feed from Goerli to Mumbai, but feel free to alter these variables as you see fit ([here](./apps/contracts/scripts/utils.ts)).
+```
+git diff --no-index ./apps/contracts/contracts/chainlink-ocr/ ./apps/contracts/contracts/chainlink-ocr-original
+```
+
+### Deployment
+
+A convenient frontend for deploying a Chainlink feed to your chain can be found [here](https://permissionless-chainlink-feeds-frontend.vercel.app/). If you'd prefer to run commands yourself or are deploying to a chain that only recently had Hyperlane deployed to it, the following guide will help you get up and running.
+
+This guide assumes we'll be deploying the [ETH/USD](https://data.chain.link/) feed from Goerli to Mumbai, but feel free to alter these variables as you see fit ([here](./apps/contracts/scripts/utils.ts)).
 
 We'll first get your dependencies installed by running,
 
@@ -16,7 +24,7 @@ We'll first get your dependencies installed by running,
 ➜  pnpm install
 ```
 
-#### API and frontend
+#### API
 
 The API handles querying Chainlink specific data either from the chain itself or via an indexing provider like Etherscan or Moralis.
 
@@ -33,7 +41,7 @@ And then run the service,
 ➜  pnpm dev
 ```
 
-If you'd prefer to not run this service, you can rely on an already live one at https://permissionless-chainlink-feeds-frontend.vercel.app. Just make sure to replace the `API_ENDPOINT` variable in [apps/contracts/scripts/utils.ts](./apps/contracts/scripts/utils.ts) with this live URL.
+If you'd prefer to not run this service, you can rely on an already live one at https://permissionless-chainlink-feeds-frontend.vercel.app/api. Just make sure to replace the `API_ENDPOINT` variable in [apps/contracts/scripts/utils.ts](./apps/contracts/scripts/utils.ts) with this live URL.
 
 #### Smart contracts
 
