@@ -141,7 +141,9 @@ export default function Initialise({
     }
   };
 
-  const onNext = () => {};
+  const onNext = () => {
+    router.push(`/${address}/automate`);
+  };
 
   // @ts-expect-error
   const latestAnswer = latestRoundData.data?.[1] !== BigInt(0);
