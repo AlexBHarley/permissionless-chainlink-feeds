@@ -63,18 +63,6 @@ export default function Done({
             />
             .
           </div>
-
-          <div className="">
-            For this we'll use{" "}
-            <Link label="Gelato" link="https://gelato.network" />, a smart
-            contract automation platform. All we need to do is deploy our
-            automation contract and fund it with a little gas to pay for relays.
-          </div>
-
-          <div className="">
-            After triggering a round update it could take a couple minutes for
-            the round data to land on your destination chain.
-          </div>
         </div>
       </Step>
     </>

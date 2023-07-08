@@ -12,7 +12,15 @@ export const Step: FC<{
   onNextLabel: string;
   onNextDisabled: boolean;
   loading?: boolean;
-}> = ({ onNext, onNextLabel, children, onNextDisabled, loading }) => {
+  backDisabled?: boolean;
+}> = ({
+  onNext,
+  onNextLabel,
+  children,
+  onNextDisabled,
+  loading,
+  backDisabled,
+}) => {
   const router = useRouter();
 
   const disabled = onNextDisabled || loading;
@@ -21,23 +29,26 @@ export const Step: FC<{
       <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
         <div className="px-4 py-6 sm:p-8">{children}</div>
         <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
-          <button
-            type="button"
-            onClick={router.back}
-            className="text-sm font-semibold leading-6 text-gray-900"
-          >
-            Back
-          </button>
+          {backDisabled ? null : (
+            <button
+              type="button"
+              onClick={router.back}
+              className="text-sm font-semibold leading-6 text-gray-900"
+            >
+              Back
+            </button>
+          )}
           <button
             className={classNames(
-              `rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition`,
+              `rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition flex items-center space-x-2`,
               !disabled && "bg-indigo-600 hover:bg-indigo-500",
               disabled && "bg-indigo-400"
             )}
             disabled={disabled}
             onClick={onNext}
           >
-            {loading ? <Spinner /> : onNextLabel}
+            <span>{onNextLabel}</span>
+            {loading && <Spinner />}
           </button>
         </div>
       </div>

@@ -1,29 +1,25 @@
 "use client";
 
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 import {
   chainIdToMetadata,
   hyperlaneContractAddresses,
 } from "@hyperlane-xyz/sdk";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { useQuery } from "react-query";
 import {
   Address,
-  useAccount,
   useChainId,
   useContractReads,
   usePublicClient,
-  useTransaction,
   useWalletClient,
 } from "wagmi";
 
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
-
 import EACAggregatorProxy from "../../abis/EACAggregatorProxy.json";
-
 import { abi, bytecode } from "../../artifacts/ChainlinkAggregator.json";
-import { useRouter } from "next/navigation";
-import { useQuery } from "react-query";
 import { Step } from "../../components/Step";
-import { toast } from "react-hot-toast";
 import { useContractStore } from "../../state/contract";
 
 const CHAINS = Object.values(chainIdToMetadata);
@@ -83,6 +79,8 @@ export default function Deploy() {
 
   const onDeploy = async () => {
     try {
+      setLoading(true);
+
       if (chainId !== destination) {
         await wallet.data?.switchChain({ id: destination });
       }
@@ -90,8 +88,6 @@ export default function Deploy() {
       if (!description) {
         throw new Error("Price feed not found");
       }
-
-      setLoading(true);
 
       const hash = await wallet.data!.deployContract({
         abi,
@@ -169,6 +165,7 @@ export default function Deploy() {
             <a
               href="https://data.chain.link/"
               className="text-blue-400 flex items-center"
+              target="_blank"
             >
               <ArrowTopRightOnSquareIcon className="h-4 w-4 inline" />
             </a>

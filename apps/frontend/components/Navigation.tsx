@@ -1,17 +1,26 @@
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { FC } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { classNames } from "../utils/classnames";
 
-const steps = ["Welcome", "Deploy", "Initialise", "Trigger", "Automate"];
+const STEPS = [
+  { route: "/", label: "Welcome", address: false },
+  { route: "/deploy", label: "Deploy", address: false },
+  { route: "/{address}/initialise", label: "Initialise", address: true },
+  { route: "/{address}/trigger", label: "Trigger", address: true },
+  { route: "/{address}/automate", label: "Automate", address: true },
+  { route: "/{address}/done", label: "Done", address: true },
+];
 
 type Status = "done" | "doing" | "not-done";
 
 export const Navigation: FC<{ children: any }> = ({ children }) => {
   const pathname = usePathname();
   const { address } = useAccount();
+  const params = useParams();
 
   return (
     <div className="px-4 py-12 sm:px-6 lg:px-8 space-y-8">
@@ -31,16 +40,17 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
       <div className="flex space-x-12">
         <nav className="flex justify-center" aria-label="Progress">
           <ol role="list" className="space-y-6">
-            {steps.map((step, index) => {
-              const currentStepIndex = steps.findIndex((x) => {
-                if (pathname === "/") {
-                  return x === "Welcome";
-                }
+            {STEPS.map((step, index) => {
+              const currentStepIndex = STEPS.findIndex((x) =>
+                pathname === "/"
+                  ? x.label === "Welcome"
+                  : pathname?.includes(x.label.toLowerCase())
+              );
 
-                return pathname?.includes(x.toLowerCase());
-              });
+              const address = (params as any).address;
+              const link = step.route.replace("{address}", address);
 
-              const link = step === "Welcome" ? "/" : `/${step.toLowerCase()}`;
+              const linkDisabled = step.route.includes("{address}") && !address;
 
               const status: Status =
                 currentStepIndex === index
@@ -49,12 +59,13 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
                   ? "not-done"
                   : "done";
               return (
-                <li key={step}>
+                <li key={step.label}>
                   {status === "done" ? (
                     <Link
                       href={link}
                       className="flex items-start"
                       aria-current="step"
+                      prefetch={false}
                     >
                       <span className="flex items-start">
                         <span className="relative flex h-5 w-5 flex-shrink-0 items-center justify-center">
@@ -64,15 +75,16 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
                           />
                         </span>
                         <span className="ml-3 text-sm font-medium text-gray-500 group-hover:text-gray-900">
-                          {step}
+                          {step.label}
                         </span>
                       </span>
                     </Link>
                   ) : status === "doing" ? (
                     <Link
-                      href={`/${step.toLowerCase()}`}
+                      href={link}
                       className="flex items-start"
                       aria-current="step"
+                      prefetch={false}
                     >
                       <span
                         className="relative flex h-5 w-5 flex-shrink-0 items-center justify-center"
@@ -82,14 +94,19 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
                         <span className="relative block h-2 w-2 rounded-full bg-indigo-600" />
                       </span>
                       <span className="ml-3 text-sm font-medium text-indigo-600">
-                        {step}
+                        {step.label}
                       </span>
                     </Link>
                   ) : (
                     <Link
-                      href={`/${step.toLowerCase()}`}
-                      className="flex items-start"
+                      href={link}
+                      className={classNames(
+                        `flex items-start`,
+                        linkDisabled && "pointer-events-none"
+                      )}
                       aria-current="step"
+                      prefetch={false}
+                      aria-disabled={linkDisabled}
                     >
                       <div className="flex items-start">
                         <div
@@ -99,7 +116,7 @@ export const Navigation: FC<{ children: any }> = ({ children }) => {
                           <div className="h-2 w-2 rounded-full bg-gray-300 group-hover:bg-gray-400" />
                         </div>
                         <p className="ml-3 text-sm font-medium text-gray-500 group-hover:text-gray-900">
-                          {step}
+                          {step.label}
                         </p>
                       </div>
                     </Link>

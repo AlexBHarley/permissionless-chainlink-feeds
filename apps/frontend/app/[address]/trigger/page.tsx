@@ -24,6 +24,8 @@ import { abi } from "../../../artifacts/ChainlinkAggregator.json";
 import { Spinner } from "../../../components/Spinner";
 import { Step } from "../../../components/Step";
 import { useContractStore } from "../../../state/contract";
+import { useOriginChain } from "../../../hooks/use-origin-chain";
+import { useDestinationChain } from "../../../hooks/use-destination-chain";
 
 export default function Initialise({
   params: { address },
@@ -36,6 +38,8 @@ export default function Initialise({
 
   const { origin, feed, destination } = useContractStore();
   const wallet = useWalletClient();
+  const originChain = useOriginChain();
+  const destinationChain = useDestinationChain();
 
   const [loading, setLoading] = useState(false);
 
@@ -157,14 +161,15 @@ export default function Initialise({
     >
       <div className="space-y-6 text-sm leading-6">
         <div className="">
-          Almost everything has been setup for your automated price feed. Before
-          we setup said automation, {"let's"} quickly confirm that the
-          integration is working.
+          We're nearly there, almost everything is setup for your automated
+          price feed. Before we setup said automation, {"let's"} quickly confirm
+          that the integration is working by manually triggering a price update.
         </div>
 
         <div className="">
-          After triggering a round update it could take a couple minutes for the
-          round data to land on your destination chain.
+          Note that after triggering a round update on {originChain.displayName}{" "}
+          it could take a couple minutes for the round data to land on{" "}
+          {destinationChain.displayName}.
         </div>
 
         <div className="flex items-center justify-between">

@@ -15,7 +15,12 @@ export default function Page() {
   };
 
   return (
-    <Step onNext={onNext} onNextLabel="Next" onNextDisabled={!address}>
+    <Step
+      onNext={onNext}
+      onNextLabel="Next"
+      onNextDisabled={!address}
+      backDisabled
+    >
       <div className="space-y-4 text-sm leading-6">
         <div className="">
           Welcome to the Permissionless Chainlink Feed wizard. {"We'll"} be
