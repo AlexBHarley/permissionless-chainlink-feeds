@@ -38,7 +38,7 @@ module.exports = {
       },
     },
     ...objMap(chainMetadata, (_chain, cc) => ({
-      url: cc.publicRpcUrls[0].http,
+      url: cc.rpcUrls[0].http,
       accounts: [PRIVATE_KEY],
       name: cc.name,
     })),

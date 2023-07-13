@@ -94,6 +94,7 @@ export default function Deploy() {
         bytecode: bytecode as Address,
         args: [
           ...constructorArguments.data,
+          // @ts-expect-error
           hyperlaneContractAddresses[chainIdToMetadata[destination].name]
             .mailbox,
           [api],

@@ -49,6 +49,7 @@ export default function Initialise({
   );
 
   const originHyperlaneAddresses =
+    // @ts-expect-error
     hyperlaneContractAddresses[chainIdToMetadata[origin].name];
 
   const quoteGasPayment = useContractRead({

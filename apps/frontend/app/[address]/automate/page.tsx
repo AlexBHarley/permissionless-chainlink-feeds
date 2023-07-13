@@ -66,7 +66,9 @@ export default function Automate({
         args: [
           GELATO_ADDRESSES[chainId].automate,
           account.address,
+          // @ts-expect-error
           hyperlaneContractAddresses[chainIdToMetadata[origin].name].mailbox,
+          // @ts-expect-error
           hyperlaneContractAddresses[chainIdToMetadata[origin].name]
             .defaultIsmInterchainGasPaymaster,
           feed,

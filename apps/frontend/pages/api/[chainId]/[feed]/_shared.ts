@@ -236,13 +236,8 @@ export class EtherscanService {
     //   }),
     // ]);
 
-    // console.log("input");
-    // console.log(response[0].input);
-    // console.log("bytecode");
-    // console.log(bytecode);
-
     // const { args } = decodeDeployData({
-    //   abi: OffchainAggregatorAbi,
+    //   abi: AccessControlledOffchainAggregatorAbi,
     //   // viem adds 0x to the data property
     //   // @ts-expect-error
     //   data: response[0].input.slice(2),
