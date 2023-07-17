@@ -30,10 +30,10 @@ export default function Done({
   const originChain = useOriginChain();
   const destinationChain = useDestinationChain();
 
-  const { origin, destination, gelatoTaskId } = useContractStore();
+  const { origin, gelatoTaskId } = useContractStore();
 
   const onNext = () => {
-    router.push(`/${address}/automate`);
+    router.push(`/`);
   };
 
   return (
@@ -42,7 +42,7 @@ export default function Done({
 
       <Step
         onNext={onNext}
-        onNextLabel="Next"
+        onNextLabel="Start again"
         onNextDisabled={false}
         loading={false}
       >
