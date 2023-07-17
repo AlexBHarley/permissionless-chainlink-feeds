@@ -56,13 +56,14 @@ export default function Automate({
         return;
       }
 
+      setLoading(true);
+
       const ethersSigner = walletClientToSigner(wallet.data!);
       const automate = new AutomateSDK(chainId, ethersSigner);
 
-      const hash = await wallet.data!.deployContract({
+      const deployHash = await wallet.data!.deployContract({
         bytecode: GelatoAutomate.bytecode as Address,
         abi: GelatoAutomate.abi,
-        value: parseEther("0.1"),
         args: [
           GELATO_ADDRESSES[chainId].automate,
           account.address,
@@ -78,7 +79,21 @@ export default function Automate({
       });
 
       const { contractAddress: automateAddress } =
-        await client.waitForTransactionReceipt({ hash });
+        await client.waitForTransactionReceipt({
+          hash: deployHash,
+          timeout: 120_000,
+        });
+      toast.success("Automation contract deployed");
+
+      const fundHash = await wallet.data!.sendTransaction({
+        value: parseEther("0.1"),
+        to: automateAddress!,
+      });
+      await client.waitForTransactionReceipt({
+        hash: fundHash,
+        timeout: 120_000,
+      });
+      toast.success("Automation contract funded");
 
       const contract = new Contract(
         automateAddress!,
@@ -104,6 +119,7 @@ export default function Automate({
 
       await tx.wait();
 
+      toast.success("Gelato task created");
       router.push(`/${address}/done`);
     } catch (e: any) {
       toast.error(e.message);
@@ -131,7 +147,8 @@ export default function Automate({
           For this {"we'll"} use{" "}
           <Link label="Gelato" link="https://gelato.network" />, a smart
           contract automation platform. All we need to do is deploy our
-          automation contract and fund it with a little gas to pay for relays.
+          automation contract, fund it with a little gas to pay for relays and
+          then register the task with Gelato.
         </div>
       </div>
     </Step>

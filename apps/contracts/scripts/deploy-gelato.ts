@@ -38,7 +38,7 @@ async function main() {
     await signer.getAddress(),
     hyperlaneContractAddresses[chainIdToMetadata[ORIGIN_DOMAIN].name].mailbox,
     hyperlaneContractAddresses[chainIdToMetadata[ORIGIN_DOMAIN].name]
-      .interchainGasPaymaster,
+      .defaultIsmInterchainGasPaymaster,
     FEED_ADDRESS,
     DESTINATION_DOMAIN,
     AGGREGATOR_ADDRESS

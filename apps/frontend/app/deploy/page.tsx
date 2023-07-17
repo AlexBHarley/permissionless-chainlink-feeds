@@ -101,7 +101,11 @@ export default function Deploy() {
         ],
       });
 
-      const receipt = await client.waitForTransactionReceipt({ hash });
+      const receipt = await client.waitForTransactionReceipt({
+        hash,
+        timeout: 60_000,
+      });
+      toast.success("Contract deployed");
       router.push(`/${receipt.contractAddress}/initialise`);
     } catch (e: any) {
       toast.error(e.shortMessage ?? e.message);

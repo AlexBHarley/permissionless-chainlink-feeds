@@ -60,22 +60,24 @@ export default function Initialise({
     abi: InterchainGasPaymasterAbi,
   });
 
-  const latestRoundData = useContractRead({
-    chainId: destination,
-    address: address as Address,
-    functionName: "latestRoundData",
-    args: [],
-    abi,
-  });
+  const { refetch: refetchLatestRoundData, data: latestRoundData } =
+    useContractRead({
+      chainId: destination,
+      address: address as Address,
+      functionName: "latestRoundData",
+      args: [],
+      abi,
+    });
 
   useEffect(() => {
     const interval = setInterval(() => {
       refetchLatestRoundId();
+      refetchLatestRoundData();
     }, 10_000);
     return () => {
       clearInterval(interval);
     };
-  }, [refetchLatestRoundId]);
+  }, [refetchLatestRoundId, refetchLatestRoundData]);
 
   const onTrigger = async () => {
     try {
@@ -151,7 +153,7 @@ export default function Initialise({
   };
 
   // @ts-expect-error
-  const latestAnswer = latestRoundData.data?.[1] !== BigInt(0);
+  const latestAnswer = latestRoundData?.[1];
 
   return (
     <Step
@@ -175,7 +177,7 @@ export default function Initialise({
 
         <div className="flex items-center justify-between">
           <div>
-            {latestAnswer ? (
+            {latestAnswer !== BigInt(0) ? (
               <span>Latest round data</span>
             ) : (
               <span>No round data found yet</span>

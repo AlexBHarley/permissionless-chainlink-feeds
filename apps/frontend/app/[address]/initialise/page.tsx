@@ -54,7 +54,8 @@ export default function Initialise({
         functionName: "setConfig",
         args: [...setConfigArguments.data],
       });
-      await client.waitForTransactionReceipt({ hash });
+      await client.waitForTransactionReceipt({ hash, timeout: 120_000 });
+      toast.success("Contract initialised");
       router.push(`/${address}/trigger`);
     } catch (e: any) {
       toast.error(e.shortMessage ?? e.message);
@@ -67,7 +68,7 @@ export default function Initialise({
     <Step
       onNext={onInitialise}
       onNextLabel="Initialise"
-      onNextDisabled={false}
+      onNextDisabled={setConfigArguments.isLoading}
       loading={loading}
     >
       <div className="space-y-6 text-sm leading-6">
