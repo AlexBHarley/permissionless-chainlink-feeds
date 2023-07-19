@@ -6,21 +6,20 @@ import {
   hyperlaneContractAddresses,
 } from "@hyperlane-xyz/sdk";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useQuery } from "react-query";
 import {
   Address,
   useChainId,
-  useContractReads,
   useNetwork,
   usePublicClient,
   useWalletClient,
 } from "wagmi";
 
-import EACAggregatorProxy from "../../abis/EACAggregatorProxy.json";
 import { abi, bytecode } from "../../artifacts/ChainlinkAggregator.json";
 import { Step } from "../../components/Step";
+import { useAggregator } from "../../hooks/use-aggregator";
 import { useContractStore } from "../../state/contract";
 
 const VERCEL_API_ENDPOINT =
@@ -35,9 +34,11 @@ export default function Deploy() {
   const client = usePublicClient();
   const chainId = useChainId();
 
-  const [api, setApi] = useState(
-    `${VERCEL_API_ENDPOINT}/${chainId}/${feed}/round_data`
-  );
+  const [api, setApi] = useState("");
+
+  useEffect(() => {
+    setApi(`${VERCEL_API_ENDPOINT}/${origin}/${feed}/round_data`);
+  }, [feed, origin]);
 
   const constructorArguments = useQuery("constructor_arguments", () =>
     fetch(`/api/${origin}/${feed}/constructor_arguments`).then((x) => x.json())
@@ -50,35 +51,7 @@ export default function Deploy() {
 
   const wallet = useWalletClient({ chainId: destination });
 
-  const aggregator = useContractReads({
-    contracts: [
-      {
-        // @ts-expect-error
-        abi: EACAggregatorProxy,
-        functionName: "description",
-        args: [],
-        address: feed as Address,
-        chainId: origin,
-      },
-      {
-        // @ts-expect-error
-        abi: EACAggregatorProxy,
-        functionName: "latestRoundData",
-        args: [],
-        address: feed as Address,
-        chainId: origin,
-      },
-      {
-        // @ts-expect-error
-        abi: EACAggregatorProxy,
-        functionName: "decimals",
-        args: [],
-        address: feed as Address,
-        chainId: origin,
-      },
-    ],
-    enabled: !!feed,
-  });
+  const aggregator = useAggregator();
 
   const onDeploy = async () => {
     try {
@@ -119,13 +92,13 @@ export default function Deploy() {
     }
   };
 
-  const onSelectOrigin = (name: string) => {
-    const c = chains.find((x) => x.name === name);
+  const onSelectOrigin = (id: number) => {
+    const c = chains.find((x) => x.id === id);
     if (c) setOrigin(c.id);
   };
 
-  const onSelectDestination = (name: string) => {
-    const c = chains.find((x) => x.name === name);
+  const onSelectDestination = (id: number) => {
+    const c = chains.find((x) => x.id === id);
     if (c) setDestination(c.id);
   };
 
@@ -157,11 +130,13 @@ export default function Deploy() {
               name="origin"
               disabled={loading}
               className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              onChange={(e) => onSelectOrigin(e.target.value)}
-              value={chainIdToMetadata[origin].displayName}
+              onChange={(e) => onSelectOrigin(parseInt(e.target.value))}
+              value={origin.toString()}
             >
               {chains.map((x) => (
-                <option key={x.name}>{x.name}</option>
+                <option key={`origin-${x.id}`} value={x.id.toString()}>
+                  {chainIdToMetadata[x.id].displayName}
+                </option>
               ))}
             </select>
           </div>
@@ -212,12 +187,14 @@ export default function Deploy() {
               id="destination"
               name="destination"
               className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              onChange={(e) => onSelectDestination(e.target.value)}
+              onChange={(e) => onSelectDestination(parseInt(e.target.value))}
               disabled={loading}
-              value={chainIdToMetadata[destination].displayName}
+              value={destination.toString()}
             >
               {chains.map((x) => (
-                <option key={x.name}>{x.name}</option>
+                <option key={`destination-${x.id}`} value={x.id.toString()}>
+                  {chainIdToMetadata[x.id].displayName}
+                </option>
               ))}
             </select>
           </div>

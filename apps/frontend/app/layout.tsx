@@ -10,6 +10,7 @@ import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import * as wagmiChains from "wagmi/chains";
 import { chainIdToMetadata } from "@hyperlane-xyz/sdk";
 import { publicProvider } from "wagmi/providers/public";
+import { alchemyProvider } from "wagmi/providers/alchemy";
 
 import { Navigation } from "../components/Navigation";
 
@@ -17,9 +18,15 @@ const supportedChains = Object.values(wagmiChains).filter(
   (c) => !!chainIdToMetadata[c.id]
 );
 
-const { chains, publicClient } = configureChains(supportedChains, [
-  publicProvider(),
-]);
+const providers = [];
+if (process.env.NEXT_PUBLIC_ALCHEMY_API_KEY) {
+  providers.push(
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY })
+  );
+}
+providers.push(publicProvider());
+
+const { chains, publicClient } = configureChains(supportedChains, providers);
 
 const { connectors } = getDefaultWallets({
   appName: "Permissionless Chainlink Feeds",

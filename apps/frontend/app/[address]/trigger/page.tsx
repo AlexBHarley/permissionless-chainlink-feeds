@@ -27,6 +27,7 @@ import { useContractStore } from "../../../state/contract";
 import { useOriginChain } from "../../../hooks/use-origin-chain";
 import { useDestinationChain } from "../../../hooks/use-destination-chain";
 import { Link } from "../../../components/Link";
+import { useAggregator } from "../../../hooks/use-aggregator";
 
 export default function Initialise({
   params: { address },
@@ -52,6 +53,8 @@ export default function Initialise({
   const { data: latestRoundId } = useQuery("constructor_arguments", () =>
     fetch(`/api/${origin}/${feed}/latest_round_id`).then((x) => x.json())
   );
+
+  const aggregator = useAggregator();
 
   const originHyperlaneAddresses =
     // @ts-expect-error
@@ -159,6 +162,14 @@ export default function Initialise({
   // @ts-expect-error
   const latestAnswer = latestRoundData?.[1];
 
+  const description =
+    aggregator.data?.every((x) => x.status === "success") && latestAnswer
+      ? `${
+          // @ts-expect-error
+          latestAnswer / BigInt(10 ** aggregator.data[2].result)
+        }`
+      : null;
+
   return (
     <Step
       onNext={onNext}
@@ -187,7 +198,7 @@ export default function Initialise({
         <div className="flex items-center justify-between">
           <div>
             {latestAnswer && latestAnswer !== BigInt(0) ? (
-              <span>Latest round data {latestAnswer}</span>
+              <span>Latest round data: {description}</span>
             ) : (
               <span>No round data found yet</span>
             )}
