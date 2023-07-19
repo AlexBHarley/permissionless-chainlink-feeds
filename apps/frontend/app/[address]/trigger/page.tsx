@@ -26,6 +26,7 @@ import { Step } from "../../../components/Step";
 import { useContractStore } from "../../../state/contract";
 import { useOriginChain } from "../../../hooks/use-origin-chain";
 import { useDestinationChain } from "../../../hooks/use-destination-chain";
+import { Link } from "../../../components/Link";
 
 export default function Initialise({
   params: { address },
@@ -41,11 +42,15 @@ export default function Initialise({
   const originChain = useOriginChain();
   const destinationChain = useDestinationChain();
 
+  const explorer = chainIdToMetadata[chainId]?.blockExplorers?.find(
+    (x) => x.family === "etherscan"
+  );
+  const explorerLink = explorer ? `${explorer.url}/address/${address}` : null;
+
   const [loading, setLoading] = useState(false);
 
-  const { refetch: refetchLatestRoundId, data: latestRoundId } = useQuery(
-    "constructor_arguments",
-    () => fetch(`/api/${origin}/${feed}/latest_round_id`).then((x) => x.json())
+  const { data: latestRoundId } = useQuery("constructor_arguments", () =>
+    fetch(`/api/${origin}/${feed}/latest_round_id`).then((x) => x.json())
   );
 
   const originHyperlaneAddresses =
@@ -71,13 +76,12 @@ export default function Initialise({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      refetchLatestRoundId();
       refetchLatestRoundData();
     }, 10_000);
     return () => {
       clearInterval(interval);
     };
-  }, [refetchLatestRoundId, refetchLatestRoundData]);
+  }, [refetchLatestRoundData]);
 
   const onTrigger = async () => {
     try {
@@ -162,7 +166,12 @@ export default function Initialise({
       onNextDisabled={false}
       loading={false}
     >
-      <div className="space-y-6 text-sm leading-6">
+      <div className="space-y-4 text-sm leading-6">
+        <div className="">
+          Your Chainlink feed has been{" "}
+          <Link label={`deployed and initialised`} link={explorerLink ?? ""} />{" "}
+          on {destinationChain.displayName}!
+        </div>
         <div className="">
           {"We're"} nearly there, almost everything is setup for your automated
           price feed. Before we setup said automation, {"let's"} quickly confirm
@@ -177,8 +186,8 @@ export default function Initialise({
 
         <div className="flex items-center justify-between">
           <div>
-            {latestAnswer !== BigInt(0) ? (
-              <span>Latest round data</span>
+            {latestAnswer && latestAnswer !== BigInt(0) ? (
+              <span>Latest round data {latestAnswer}</span>
             ) : (
               <span>No round data found yet</span>
             )}

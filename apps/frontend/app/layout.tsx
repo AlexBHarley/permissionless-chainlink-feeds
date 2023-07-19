@@ -7,43 +7,19 @@ import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
-import {
-  arbitrum,
-  arbitrumGoerli,
-  avalanche,
-  avalancheFuji,
-  bsc,
-  bscTestnet,
-  goerli,
-  mainnet,
-  optimism,
-  optimismGoerli,
-  polygon,
-  polygonMumbai,
-  sepolia,
-} from "wagmi/chains";
+import * as wagmiChains from "wagmi/chains";
+import { chainIdToMetadata } from "@hyperlane-xyz/sdk";
 import { publicProvider } from "wagmi/providers/public";
 
 import { Navigation } from "../components/Navigation";
 
-const { chains, publicClient } = configureChains(
-  [
-    mainnet,
-    goerli,
-    sepolia,
-    optimism,
-    optimismGoerli,
-    polygon,
-    polygonMumbai,
-    arbitrum,
-    arbitrumGoerli,
-    avalanche,
-    avalancheFuji,
-    bsc,
-    bscTestnet,
-  ],
-  [publicProvider()]
+const supportedChains = Object.values(wagmiChains).filter(
+  (c) => !!chainIdToMetadata[c.id]
 );
+
+const { chains, publicClient } = configureChains(supportedChains, [
+  publicProvider(),
+]);
 
 const { connectors } = getDefaultWallets({
   appName: "Permissionless Chainlink Feeds",

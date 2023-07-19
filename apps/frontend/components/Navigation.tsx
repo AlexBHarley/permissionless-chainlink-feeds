@@ -1,5 +1,5 @@
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { FC } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -9,7 +9,6 @@ import { classNames } from "../utils/classnames";
 const STEPS = [
   { route: "/", label: "Welcome", address: false },
   { route: "/deploy", label: "Deploy", address: false },
-  { route: "/{address}/initialise", label: "Initialise", address: true },
   { route: "/{address}/trigger", label: "Trigger", address: true },
   { route: "/{address}/automate", label: "Automate", address: true },
   { route: "/{address}/done", label: "Done", address: true },

@@ -9,7 +9,7 @@ export const DESTINATION_DOMAIN = 80001;
 export const FEED_ADDRESS = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e";
 
 // Fill this in with your deployed aggregator address
-export const AGGREGATOR_ADDRESS = "0xc57606b4dCFad9dCaa1932b0A7bD2f0C10240834";
+export const AGGREGATOR_ADDRESS = "0xeb1cdce0a7e57a2255e663afa059bfb8e742ab1c";
 
 export async function apiFetch(path: string, options?: RequestInit) {
   const response = await fetch(`${API_ENDPOINT}${path}`, options);

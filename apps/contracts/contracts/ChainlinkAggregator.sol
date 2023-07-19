@@ -17,18 +17,17 @@ contract ChainlinkAggregator is
     IMailbox mailbox;
 
     string[] public offchainUrls;
+    uint32 public origin;
 
     /**
-     * For ease of deployment & initialisation, two things are bundled in here.
+     * For ease of deployment & initialisation, a few things are bundled in here.
      *
      * 1. Constructor data for the Chainlink OffchainAggregator
-     * 2. Hyperlane specific things like the Mailbox address and CCIP Read ISM URLs.
-     *
-     * setConfig data can unfortunately not be passed here as the OffchainAggregator expects
-     * calldata variables
+     * 2. setConfig data for initialization of the Chainlink OffchainAggregator
+     * 3. Hyperlane specific things like the Mailbox address and CCIP Read ISM URLs.
      */
     constructor(
-        // OffchainAggregator
+        // OffchainAggregator constructor
         uint32 _maximumGasPrice,
         uint32 _reasonableGasPrice,
         uint32 _microLinkPerEth,
@@ -41,9 +40,16 @@ contract ChainlinkAggregator is
         AccessControllerInterface _requesterAccessController,
         uint8 _decimals,
         string memory _description,
+        // OffchainAggregator setConfig
+        address[] memory _signers,
+        address[] memory _transmitters,
+        uint8 _threshold,
+        uint64 _encodedConfigVersion,
+        bytes memory _encoded,
         // Hyperlane
         IMailbox _mailbox,
-        string[] memory _offchainUrls
+        string[] memory _offchainUrls,
+        uint32 _origin
     )
         OffchainAggregator(
             _maximumGasPrice,
@@ -62,6 +68,14 @@ contract ChainlinkAggregator is
     {
         mailbox = _mailbox;
         offchainUrls = _offchainUrls;
+        origin = _origin;
+        super._setConfig(
+            _signers,
+            _transmitters,
+            _threshold,
+            _encodedConfigVersion,
+            _encoded
+        );
     }
 
     /**
@@ -83,7 +97,7 @@ contract ChainlinkAggregator is
         uint8 _threshold,
         uint64 _encodedConfigVersion,
         bytes calldata _encoded
-    ) external onlyOwner {
+    ) public onlyOwner {
         super._setConfig(
             _signers,
             _transmitters,

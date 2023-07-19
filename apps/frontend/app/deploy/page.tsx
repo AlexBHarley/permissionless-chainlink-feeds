@@ -13,6 +13,7 @@ import {
   Address,
   useChainId,
   useContractReads,
+  useNetwork,
   usePublicClient,
   useWalletClient,
 } from "wagmi";
@@ -22,14 +23,13 @@ import { abi, bytecode } from "../../artifacts/ChainlinkAggregator.json";
 import { Step } from "../../components/Step";
 import { useContractStore } from "../../state/contract";
 
-const CHAINS = Object.values(chainIdToMetadata);
-
 const VERCEL_API_ENDPOINT =
   "https://permissionless-chainlink-feeds-frontend.vercel.app/api";
 
 export default function Deploy() {
   const { origin, setOrigin, destination, setDestination, feed, setFeed } =
     useContractStore();
+  const { chains } = useNetwork();
 
   const router = useRouter();
   const client = usePublicClient();
@@ -41,6 +41,9 @@ export default function Deploy() {
 
   const constructorArguments = useQuery("constructor_arguments", () =>
     fetch(`/api/${origin}/${feed}/constructor_arguments`).then((x) => x.json())
+  );
+  const setConfigArguments = useQuery("set_config_arguments", () =>
+    fetch(`/api/${origin}/${feed}/set_config_arguments`).then((x) => x.json())
   );
 
   const [loading, setLoading] = useState(false);
@@ -94,19 +97,21 @@ export default function Deploy() {
         bytecode: bytecode as Address,
         args: [
           ...constructorArguments.data,
+          ...setConfigArguments.data,
           // @ts-expect-error
           hyperlaneContractAddresses[chainIdToMetadata[destination].name]
             .mailbox,
           [api],
+          origin,
         ],
       });
 
       const receipt = await client.waitForTransactionReceipt({
         hash,
-        timeout: 60_000,
+        timeout: 120_000,
       });
       toast.success("Contract deployed");
-      router.push(`/${receipt.contractAddress}/initialise`);
+      router.push(`/${receipt.contractAddress}/trigger`);
     } catch (e: any) {
       toast.error(e.shortMessage ?? e.message);
     } finally {
@@ -114,14 +119,14 @@ export default function Deploy() {
     }
   };
 
-  const onSelectOrigin = (displayName: string) => {
-    const c = CHAINS.find((x) => x.displayName === displayName);
-    if (c) setOrigin(c.chainId);
+  const onSelectOrigin = (name: string) => {
+    const c = chains.find((x) => x.name === name);
+    if (c) setOrigin(c.id);
   };
 
-  const onSelectDestination = (displayName: string) => {
-    const c = CHAINS.find((x) => x.displayName === displayName);
-    if (c) setDestination(c.chainId);
+  const onSelectDestination = (name: string) => {
+    const c = chains.find((x) => x.name === name);
+    if (c) setDestination(c.id);
   };
 
   const description = aggregator.data?.every((x) => x.status === "success")
@@ -135,7 +140,7 @@ export default function Deploy() {
     <Step
       onNext={onDeploy}
       onNextLabel="Deploy"
-      onNextDisabled={false}
+      onNextDisabled={!constructorArguments.data || !setConfigArguments.data}
       loading={loading}
     >
       <div className="space-y-6">
@@ -155,8 +160,8 @@ export default function Deploy() {
               onChange={(e) => onSelectOrigin(e.target.value)}
               value={chainIdToMetadata[origin].displayName}
             >
-              {CHAINS.map((x) => (
-                <option key={x.name}>{x.displayName}</option>
+              {chains.map((x) => (
+                <option key={x.name}>{x.name}</option>
               ))}
             </select>
           </div>
@@ -211,8 +216,8 @@ export default function Deploy() {
               disabled={loading}
               value={chainIdToMetadata[destination].displayName}
             >
-              {CHAINS.map((x) => (
-                <option key={x.name}>{x.displayName}</option>
+              {chains.map((x) => (
+                <option key={x.name}>{x.name}</option>
               ))}
             </select>
           </div>

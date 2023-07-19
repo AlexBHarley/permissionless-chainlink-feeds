@@ -159,11 +159,11 @@ contract OffchainAggregator is Owned, OffchainAggregatorBilling, AggregatorV2V3I
    * @param _encoded encoded off-chain oracle configuration
    */
   function _setConfig(
-    address[] calldata _signers,
-    address[] calldata _transmitters,
+    address[] memory _signers,
+    address[] memory _transmitters,
     uint8 _threshold,
     uint64 _encodedConfigVersion,
-    bytes calldata _encoded
+    bytes memory _encoded
   )
     internal
     checkConfigValid(_signers.length, _transmitters.length, _threshold)
@@ -226,11 +226,11 @@ contract OffchainAggregator is Owned, OffchainAggregatorBilling, AggregatorV2V3I
   function configDigestFromConfigData(
     address _contractAddress,
     uint64 _configCount,
-    address[] calldata _signers,
-    address[] calldata _transmitters,
+    address[] memory _signers,
+    address[] memory _transmitters,
     uint8 _threshold,
     uint64 _encodedConfigVersion,
-    bytes calldata _encodedConfig
+    bytes memory _encodedConfig
   ) internal pure returns (bytes16) {
     return bytes16(keccak256(abi.encode(_contractAddress, _configCount,
       _signers, _transmitters, _threshold, _encodedConfigVersion, _encodedConfig
@@ -606,7 +606,7 @@ contract OffchainAggregator is Owned, OffchainAggregatorBilling, AggregatorV2V3I
       // 4-byte epoch
       // 1-byte round
 
-      bytes16 configDigest = bytes16(r.rawReportContext << 88);
+      // bytes16 configDigest = bytes16(r.rawReportContext << 88);
     //   require(
     //     r.hotVars.latestConfigDigest == configDigest,
     //     "configDigest mismatch"

@@ -1,5 +1,8 @@
 import { ethers } from "hardhat";
-import { hyperlaneContractAddresses } from "@hyperlane-xyz/sdk";
+import {
+  chainIdToMetadata,
+  hyperlaneContractAddresses,
+} from "@hyperlane-xyz/sdk";
 
 import { API_ENDPOINT, FEED_ADDRESS, ORIGIN_DOMAIN, apiFetch } from "./utils";
 
@@ -18,15 +21,15 @@ async function main() {
 
   const aggregator = await ethers.deployContract("ChainlinkAggregator", [
     ...constructorArguments,
-    hyperlaneContractAddresses[await signer.getChainId()].mailbox,
-    `${API_ENDPOINT}/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/round_data`,
+    ...setConfigArguments,
+    hyperlaneContractAddresses[
+      chainIdToMetadata[await signer.getChainId()].name
+    ].mailbox,
+    [`${API_ENDPOINT}/${ORIGIN_DOMAIN}/${FEED_ADDRESS}/round_data`],
+    ORIGIN_DOMAIN,
   ]);
   const deploy = await aggregator.deployTransaction.wait();
   console.log("[Aggregator] deployed to", deploy.contractAddress);
-
-  const setConfig = await aggregator.setConfig(...setConfigArguments);
-  await setConfig.wait();
-  console.log("[Aggregator] setConfig");
 }
 
 main().catch((error) => {

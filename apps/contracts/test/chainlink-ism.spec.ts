@@ -20,7 +20,13 @@ describe("ChainlinkAggregator", () => {
     // https://goerli.etherscan.io/address/0x9b0FC4bb9981e5333689d69BdBF66351B9861E62
     aggregator = (await ethers.deployContract(
       "ChainlinkAggregator",
-      [...constructor.data, constants.AddressZero, ["http://localhost:3000"]],
+      [
+        ...constructor.data,
+        ...setConfig.data,
+        constants.AddressZero,
+        ["http://localhost:3000"],
+        5,
+      ],
       owner
     )) as ChainlinkAggregator;
   });
@@ -65,5 +71,10 @@ describe("ChainlinkAggregator", () => {
   it("gets offchain URLs", async () => {
     const urls = await aggregator.getOffchainUrls();
     expect(urls).to.eql(["http://localhost:3000"]);
+  });
+
+  it("gets origin", async () => {
+    const origin = await aggregator.origin();
+    expect(origin).to.eql(5);
   });
 });
