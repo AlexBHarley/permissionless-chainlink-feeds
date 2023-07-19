@@ -19,9 +19,9 @@ const supportedChains = Object.values(wagmiChains).filter(
 );
 
 const providers = [];
-if (process.env.NEXT_PUBLIC_ALCHEMY_API_KEY) {
+if (process.env["NEXT_PUBLIC_ALCHEMY_API_KEY"]) {
   providers.push(
-    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY })
+    alchemyProvider({ apiKey: process.env["NEXT_PUBLIC_ALCHEMY_API_KEY"] })
   );
 }
 providers.push(publicProvider());
