@@ -71,7 +71,7 @@ export default function Initialise({
       onNextDisabled={setConfigArguments.isLoading}
       loading={loading}
     >
-      <div className="space-y-6 text-sm leading-6">
+      <div className="space-y-4 text-sm leading-6">
         <div className="">
           Your Chainlink feed has been{" "}
           <Link

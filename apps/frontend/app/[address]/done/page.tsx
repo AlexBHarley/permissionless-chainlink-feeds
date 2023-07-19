@@ -46,7 +46,7 @@ export default function Done({
         onNextDisabled={false}
         loading={false}
       >
-        <div className="space-y-6 text-sm leading-6">
+        <div className="space-y-4 text-sm leading-6">
           <div className="">
             Congratulations! Your automated price feed between{" "}
             {originChain.displayName} and {destinationChain.displayName} is all

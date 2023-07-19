@@ -135,7 +135,7 @@ export default function Automate({
       onNextDisabled={false}
       loading={loading}
     >
-      <div className="space-y-6 text-sm leading-6">
+      <div className="space-y-4 text-sm leading-6">
         <div className="">
           With your price feed setup and hopefully at least one round update
           relayed, the final step is to automate relays so as soon as rounds are
