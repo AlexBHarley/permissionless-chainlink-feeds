@@ -30,7 +30,7 @@ const { chains, publicClient } = configureChains(supportedChains, providers);
 
 const { connectors } = getDefaultWallets({
   appName: "Permissionless Chainlink Feeds",
-  projectId: "permissionless-fhainlink-feeds",
+  projectId: "permissionless-chainlink-feeds",
   chains,
 });
 const wagmiConfig = createConfig({
