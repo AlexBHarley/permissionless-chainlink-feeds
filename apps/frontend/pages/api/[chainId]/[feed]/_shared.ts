@@ -11,7 +11,7 @@ import {
   keccak256,
   zeroAddress,
 } from "viem";
-import { mainnet } from "viem/chains";
+import * as chains from "viem/chains";
 import { EtherscanError, EtherscanSuccess, isEtherscanError } from "./_types";
 
 import EACAggregatorProxyAbi from "../../../../abis/EACAggregatorProxy.json";
@@ -95,8 +95,14 @@ export class EtherscanService {
   }
 
   private getEthClient(chainId: number) {
+    const chain = Object.values(chains).find((x) => x.id === chainId);
+    if (!chain) {
+      throw new Error("Unknown chain ID");
+    }
+
     const rpc = process.env[rpcUri(chainId)];
-    return createPublicClient({ chain: mainnet, transport: http(rpc) });
+    const transport = rpc ? http(rpc) : http(chain.rpcUrls.default.http[0]);
+    return createPublicClient({ chain, transport });
   }
 
   async getLatestRoundId(chainId: number, feed: string) {
